@@ -94,15 +94,16 @@ public class ModifierUtils {
             if (potentialAttributeID != null) {
                 stack.getOrCreateSubNbt(Tiered.NBT_SUBTAG_KEY).putString(Tiered.NBT_SUBTAG_DATA_KEY, potentialAttributeID.toString());
 
-                HashMap<String, Object> nbtMap = Tiered.ATTRIBUTE_DATA_LOADER.getItemAttributes().get(new Identifier(potentialAttributeID.toString())).getNbtValues();
+                PotentialAttribute.Template template = Tiered.ATTRIBUTE_DATA_LOADER.getItemAttributes().get(new Identifier(potentialAttributeID.toString())).getTemplate(Registry.ITEM.getId(stack.getItem()));
+                HashMap<String, Object> nbtMap = template.getNbtValues();
 
                 // add durability nbt
-                List<AttributeTemplate> attributeList = Tiered.ATTRIBUTE_DATA_LOADER.getItemAttributes().get(new Identifier(potentialAttributeID.toString())).getAttributes();
-                for (int i = 0; i < attributeList.size(); i++)
-                    if (attributeList.get(i).getAttributeTypeID().equals("tiered:generic.durable")) {
+                List<AttributeTemplate> attributeList = template.getAttributes();
+                for (AttributeTemplate attributeTemplate : attributeList)
+                    if (attributeTemplate.getAttributeTypeID().equals("tiered:generic.durable")) {
                         if (nbtMap == null)
                             nbtMap = new HashMap<String, Object>();
-                        nbtMap.put("durable", (double) Math.round(attributeList.get(i).getEntityAttributeModifier().getValue() * 100.0) / 100.0);
+                        nbtMap.put("durable", (double) Math.round(attributeTemplate.getEntityAttributeModifier().getValue() * 100.0) / 100.0);
                         break;
                     }
                 // add nbtMap
@@ -136,13 +137,14 @@ public class ModifierUtils {
         if (itemStack.hasNbt() && itemStack.getSubNbt(Tiered.NBT_SUBTAG_KEY) != null) {
 
             Identifier tier = new Identifier(itemStack.getOrCreateSubNbt(Tiered.NBT_SUBTAG_KEY).getString(Tiered.NBT_SUBTAG_DATA_KEY));
+            PotentialAttribute.Template template = Tiered.ATTRIBUTE_DATA_LOADER.getItemAttributes().get(tier).getTemplate(Registry.ITEM.getId(itemStack.getItem()));
 
-            HashMap<String, Object> nbtMap = Tiered.ATTRIBUTE_DATA_LOADER.getItemAttributes().get(tier).getNbtValues();
+            HashMap<String, Object> nbtMap = template.getNbtValues();
             List<String> nbtKeys = new ArrayList<String>();
             if (nbtMap != null)
                 nbtKeys.addAll(nbtMap.keySet().stream().toList());
 
-            List<AttributeTemplate> attributeList = Tiered.ATTRIBUTE_DATA_LOADER.getItemAttributes().get(tier).getAttributes();
+            List<AttributeTemplate> attributeList = template.getAttributes();
             for (int i = 0; i < attributeList.size(); i++)
                 if (attributeList.get(i).getAttributeTypeID().equals("tiered:generic.durable")) {
                     nbtKeys.add("durable");

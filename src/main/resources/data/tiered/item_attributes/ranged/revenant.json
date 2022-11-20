@@ -21,7 +21,8 @@
                 "amount": 6
             },
             "optional_equipment_slots": [
-                "MAINHAND"
+                "MAINHAND",
+                "OFFHAND"
             ]
         }
     ]

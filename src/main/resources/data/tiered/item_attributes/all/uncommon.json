@@ -1,67 +1,90 @@
 {
     "id": "tiered:uncommon",
-    "verifiers": [
-        {
-            "tag": "c:helmets"
-        },
-        {
-            "tag": "c:chestplates"
-        },
-        {
-            "tag": "c:leggings"
-        },
-        {
-            "tag": "c:boots"
-        },
-        {
-            "tag": "c:swords"
-        },
-        {
-            "tag": "c:shovels"
-        },
-        {
-            "tag": "c:pickaxes"
-        },
-        {
-            "tag": "c:hoes"
-        },
-        {
-            "tag": "c:axes"
-        }
-    ],
     "weight": 25,
     "style": {
         "color": "dark_green"
     },
-    "attributes": [
+    "templates": [
         {
-            "type": "generic.max_health",
-            "modifier": {
-                "name": "tiered:uncommon",
-                "operation": "ADDITION",
-                "amount": 2
-            },
-            "optional_equipment_slots": [
-                "MAINHAND",
-                "FEET",
-                "LEGS",
-                "CHEST",
-                "HEAD"
+            "verifiers": [
+                {
+                    "tag": "c:helmets"
+                },
+                {
+                    "tag": "c:chestplates"
+                },
+                {
+                    "tag": "c:leggings"
+                },
+                {
+                    "tag": "c:boots"
+                }
+            ],
+            "attributes": [
+                {
+                    "type": "generic.max_health",
+                    "modifier": {
+                        "name": "tiered:uncommon",
+                        "operation": "ADDITION",
+                        "amount": 2
+                    },
+                    "optional_equipment_slots": [
+                        "FEET",
+                        "LEGS",
+                        "CHEST",
+                        "HEAD"
+                    ]
+                },
+                {
+                    "type": "tiered:generic.durable",
+                    "modifier": {
+                        "name": "tiered:uncommon",
+                        "operation": "MULTIPLY_TOTAL",
+                        "amount": 0.1
+                    },
+                    "optional_equipment_slots": [
+                        "FEET",
+                        "LEGS",
+                        "CHEST",
+                        "HEAD"
+                    ]
+                }
             ]
         },
         {
-            "type": "tiered:generic.durable",
-            "modifier": {
-                "name": "tiered:uncommon",
-                "operation": "MULTIPLY_TOTAL",
-                "amount": 0.1
-            },
-            "optional_equipment_slots": [
-                "MAINHAND",
-                "FEET",
-                "LEGS",
-                "CHEST",
-                "HEAD"
+            "verifiers": [
+                {
+                    "tag": "c:swords"
+                },
+                {
+                    "tag": "c:axes"
+                }
+            ],
+            "attributes": [
+                {
+                    "type": "generic.attack_damage",
+                    "modifier": {
+                        "name": "tiered:uncommon",
+                        "operation": "MULTIPLY_TOTAL",
+                        "amount": 0.1
+                    },
+                    "optional_equipment_slots": [
+                        "MAINHAND",
+                        "OFFHAND"
+                    ]
+                },
+                {
+                    "type": "tiered:generic.durable",
+                    "modifier": {
+                        "name": "tiered:uncommon",
+                        "operation": "MULTIPLY_TOTAL",
+                        "amount": 0.1
+                    },
+                    "optional_equipment_slots": [
+                        "MAINHAND",
+                        "OFFHAND"
+                    ]
+                }
             ]
         }
     ]

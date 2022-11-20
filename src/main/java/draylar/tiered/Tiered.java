@@ -109,22 +109,23 @@ public class Tiered implements ModInitializer {
                 if (!itemStack.hasNbt() || !itemStack.getNbt().contains("AttributeModifiers", 9)) {
                     PotentialAttribute potentialAttribute = Tiered.ATTRIBUTE_DATA_LOADER.getItemAttributes().get(tier);
                     if (potentialAttribute != null) {
-                        potentialAttribute.getAttributes().forEach(template -> {
+                        PotentialAttribute.Template template = potentialAttribute.getTemplate(Registry.ITEM.getId(itemStack.getItem()));
+                        template.getAttributes().forEach(attributeTemplate -> {
                             // get required equipment slots
-                            if (template.getRequiredEquipmentSlots() != null) {
-                                List<EquipmentSlot> requiredEquipmentSlots = new ArrayList<>(Arrays.asList(template.getRequiredEquipmentSlots()));
+                            if (attributeTemplate.getRequiredEquipmentSlots() != null) {
+                                List<EquipmentSlot> requiredEquipmentSlots = new ArrayList<>(Arrays.asList(attributeTemplate.getRequiredEquipmentSlots()));
 
                                 if (requiredEquipmentSlots.contains(slot))
-                                    template.realize(modifiers, slot);
+                                    attributeTemplate.realize(modifiers, slot);
                             }
 
                             // get optional equipment slots
-                            if (template.getOptionalEquipmentSlots() != null) {
-                                List<EquipmentSlot> optionalEquipmentSlots = new ArrayList<>(Arrays.asList(template.getOptionalEquipmentSlots()));
+                            if (attributeTemplate.getOptionalEquipmentSlots() != null) {
+                                List<EquipmentSlot> optionalEquipmentSlots = new ArrayList<>(Arrays.asList(attributeTemplate.getOptionalEquipmentSlots()));
 
                                 // optional equipment slots are valid ONLY IF the equipment slot is valid for the thing
                                 if (optionalEquipmentSlots.contains(slot) && Tiered.isPreferredEquipmentSlot(itemStack, slot))
-                                    template.realize(modifiers, slot);
+                                    attributeTemplate.realize(modifiers, slot);
                             }
                         });
                     }
@@ -218,11 +219,12 @@ public class Tiered implements ModInitializer {
 
                 // found an ID
                 if (attributeID != null) {
+                    PotentialAttribute.Template template = Tiered.ATTRIBUTE_DATA_LOADER.getItemAttributes().get(new Identifier(attributeID.toString())).getTemplate(Registry.ITEM.getId(itemStack.getItem()));
 
-                    HashMap<String, Object> nbtMap = Tiered.ATTRIBUTE_DATA_LOADER.getItemAttributes().get(new Identifier(attributeID.toString())).getNbtValues();
+                    HashMap<String, Object> nbtMap = template.getNbtValues();
                     // update durability nbt
 
-                    List<AttributeTemplate> attributeList = Tiered.ATTRIBUTE_DATA_LOADER.getItemAttributes().get(new Identifier(attributeID.toString())).getAttributes();
+                    List<AttributeTemplate> attributeList = template.getAttributes();
                     for (int i = 0; i < attributeList.size(); i++)
                         if (attributeList.get(i).getAttributeTypeID().equals("tiered:generic.durable")) {
                             if (nbtMap == null)

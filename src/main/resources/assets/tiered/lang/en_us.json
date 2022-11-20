@@ -17,9 +17,11 @@
   "tiered:resilient.label": "Resilient",
   "tiered:unchained.label": "Unchained",
 
+  "tiered:broken.label": "Broken",
   "tiered:extended.label": "Extended",
 
   "tiered:lucky.label": "Lucky",
+  "tiered:unlucky.label": "Unlucky",
 
   "tiered:hasteful.label": "Hasteful",
   "tiered:swift.label": "Swift",
@@ -63,6 +65,8 @@
 
   "tiered.attribute.modifier.equals.0": "%s %s %s",
   "tiered.attribute.modifier.equals.1": "%s %s %s",
-  "tiered.attribute.modifier.equals.2": "%s %s %s"
+  "tiered.attribute.modifier.equals.2": "%s %s %s",
+
+  "tiered.tooltip.tier": "Tier: %s"
 
 }

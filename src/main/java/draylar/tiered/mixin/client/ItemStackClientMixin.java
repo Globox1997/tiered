@@ -15,7 +15,9 @@ import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.text.MutableText;
+import net.minecraft.text.Style;
 import net.minecraft.text.Text;
+import net.minecraft.text.TextColor;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.Identifier;
 
@@ -156,16 +158,33 @@ public abstract class ItemStackClientMixin {
         return vanillaFirst;
     }
 
+    @Inject(method = "getTooltip", at = @At("RETURN"), cancellable = true)
+    private void getTooltipMixin(CallbackInfoReturnable<List<Text>> returnable) {
+        if (this.getSubNbt(Tiered.NBT_SUBTAG_KEY) != null) {
+            Identifier tierId = new Identifier(getOrCreateSubNbt(Tiered.NBT_SUBTAG_KEY).getString(Tiered.NBT_SUBTAG_DATA_KEY));
+
+            // attempt to display attribute if it is valid
+            PotentialAttribute potentialAttribute = Tiered.ATTRIBUTE_DATA_LOADER.getItemAttributes().get(tierId);
+
+            if (potentialAttribute != null) {
+                List<Text> tooltip = returnable.getReturnValue();
+                Text tier = Text.translatable(potentialAttribute.getID() + ".label").setStyle(potentialAttribute.getStyle());
+                tooltip.add(1, Text.translatable("tiered.tooltip.tier", tier).setStyle(Style.EMPTY.withColor(TextColor.parse("gray"))));
+                returnable.setReturnValue(tooltip);
+            }
+        }
+    }
+
     @Inject(method = "getName", at = @At("RETURN"), cancellable = true)
     private void getNameMixin(CallbackInfoReturnable<Text> info) {
-        if (this.hasNbt() && this.getSubNbt("display") == null && this.getSubNbt(Tiered.NBT_SUBTAG_KEY) != null) {
+        if (this.getSubNbt(Tiered.NBT_SUBTAG_KEY) != null) {
             Identifier tier = new Identifier(getOrCreateSubNbt(Tiered.NBT_SUBTAG_KEY).getString(Tiered.NBT_SUBTAG_DATA_KEY));
 
             // attempt to display attribute if it is valid
             PotentialAttribute potentialAttribute = Tiered.ATTRIBUTE_DATA_LOADER.getItemAttributes().get(tier);
 
             if (potentialAttribute != null)
-                info.setReturnValue(Text.translatable(potentialAttribute.getID() + ".label").append(" ").append(info.getReturnValue()).setStyle(potentialAttribute.getStyle()));
+                info.setReturnValue(Text.empty().append(info.getReturnValue()).setStyle(potentialAttribute.getStyle()));
         }
     }
 }

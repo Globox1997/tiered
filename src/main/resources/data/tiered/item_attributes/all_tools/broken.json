@@ -1,5 +1,5 @@
 {
-  "id": "tiered:extended",
+  "id": "tiered:broken",
   "verifiers": [
     {
       "tag": "c:swords"
@@ -19,15 +19,15 @@
   ],
   "weight": 10,
   "style": {
-    "color": "dark_purple"
+    "color": "gray"
   },
   "attributes": [
     {
       "type": "reach-entity-attributes:reach",
       "modifier": {
-        "name": "tiered:extended",
+        "name": "tiered:broken",
         "operation": "ADDITION",
-        "amount": 1
+        "amount": -1
       },
       "optional_equipment_slots": [
         "MAINHAND",
@@ -37,9 +37,21 @@
     {
       "type": "reach-entity-attributes:attack_range",
       "modifier": {
-        "name": "tiered:extended",
+        "name": "tiered:broken",
         "operation": "ADDITION",
-        "amount": 1
+        "amount": -1
+      },
+      "optional_equipment_slots": [
+        "MAINHAND",
+        "OFFHAND"
+      ]
+    },
+    {
+      "type": "tiered:generic.durable",
+      "modifier": {
+        "name": "tiered:broken",
+        "operation": "MULTIPLY_TOTAL",
+        "amount": -0.02
       },
       "optional_equipment_slots": [
         "MAINHAND",
