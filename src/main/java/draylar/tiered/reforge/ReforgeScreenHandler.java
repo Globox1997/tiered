@@ -5,6 +5,7 @@ import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.inventory.Inventory;
 import net.minecraft.inventory.SimpleInventory;
 import net.minecraft.item.ArmorItem;
+import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.ToolItem;
 import net.minecraft.screen.ScreenHandler;
@@ -18,6 +19,8 @@ import draylar.tiered.Tiered;
 import draylar.tiered.api.ModifierUtils;
 import draylar.tiered.api.TieredItemTags;
 import draylar.tiered.network.TieredServerPacket;
+
+import java.util.List;
 
 public class ReforgeScreenHandler extends ScreenHandler {
 
@@ -72,13 +75,18 @@ public class ReforgeScreenHandler extends ScreenHandler {
 
     private void updateResult() {
         if (this.getSlot(0).hasStack() && this.getSlot(1).hasStack() && this.getSlot(2).hasStack()) {
-            if (ModifierUtils.getRandomAttributeIDFor(null, this.getSlot(1).getStack().getItem(), false) != null && !this.getSlot(1).getStack().isDamaged()) {
-                if (this.getSlot(1).getStack().getItem() instanceof ToolItem)
-                    this.reforgeReady = ((ToolItem) this.getSlot(1).getStack().getItem()).getMaterial().getRepairIngredient().test(this.getSlot(0).getStack());
-                else if (this.getSlot(1).getStack().getItem() instanceof ArmorItem)
-                    this.reforgeReady = ((ArmorItem) this.getSlot(1).getStack().getItem()).getMaterial().getRepairIngredient().test(this.getSlot(0).getStack());
+            Item item = this.getSlot(1).getStack().getItem();
+            if (ModifierUtils.getRandomAttributeIDFor(null, item, false) != null && !this.getSlot(1).getStack().isDamaged()) {
+                List<ItemStack> items = Tiered.REFORGE_ITEM_DATA_LOADER.getReforgeItems(item);
+                ItemStack baseItem = this.getSlot(0).getStack();
+                if (!items.isEmpty())
+                    this.reforgeReady = items.stream().anyMatch(it -> it.isItemEqualIgnoreDamage(baseItem));
+                else if (item instanceof ToolItem toolItem)
+                    this.reforgeReady = toolItem.getMaterial().getRepairIngredient().test(baseItem);
+                else if (item instanceof ArmorItem armorItem)
+                    this.reforgeReady = armorItem.getMaterial().getRepairIngredient().test(baseItem);
                 else
-                    this.reforgeReady = this.getSlot(0).getStack().isIn(TieredItemTags.REFORGE_BASE_ITEM);
+                    this.reforgeReady = baseItem.isIn(TieredItemTags.REFORGE_BASE_ITEM);
 
             } else
                 this.reforgeReady = false;
@@ -120,13 +128,18 @@ public class ReforgeScreenHandler extends ScreenHandler {
                 if (itemStack.isIn(TieredItemTags.REFORGE_ADDITION) && !this.insertItem(itemStack2, 2, 3, false))
                     return ItemStack.EMPTY;
                 if (this.getSlot(1).hasStack()) {
-                    if (this.getSlot(1).getStack().getItem() instanceof ToolItem && ((ToolItem) this.getSlot(1).getStack().getItem()).getMaterial().getRepairIngredient().test(itemStack)
+                    Item item = this.getSlot(1).getStack().getItem();
+                    if (item instanceof ToolItem toolItem && toolItem.getMaterial().getRepairIngredient().test(itemStack)
                             && !this.insertItem(itemStack2, 0, 1, false))
                         return ItemStack.EMPTY;
-                    if (this.getSlot(1).getStack().getItem() instanceof ArmorItem && ((ArmorItem) this.getSlot(1).getStack().getItem()).getMaterial().getRepairIngredient().test(itemStack)
+                    if (item instanceof ArmorItem armorItem && armorItem.getMaterial().getRepairIngredient().test(itemStack)
                             && !this.insertItem(itemStack2, 0, 1, false))
                         return ItemStack.EMPTY;
                     if (itemStack.isIn(TieredItemTags.REFORGE_BASE_ITEM) && !this.insertItem(itemStack2, 0, 1, false))
+                        return ItemStack.EMPTY;
+                    List<ItemStack> items = Tiered.REFORGE_ITEM_DATA_LOADER.getReforgeItems(item);
+                    if (items.stream().anyMatch(it -> it.isItemEqualIgnoreDamage(itemStack2.copy()))
+                            && !this.insertItem(itemStack2, 0, 1, false))
                         return ItemStack.EMPTY;
                 }
                 if (ModifierUtils.getRandomAttributeIDFor(null, itemStack.getItem(), false) != null && !this.insertItem(itemStack2, 1, 2, false))

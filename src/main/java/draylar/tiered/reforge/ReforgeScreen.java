@@ -1,12 +1,10 @@
 package draylar.tiered.reforge;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Iterator;
-import java.util.List;
+import java.util.*;
 
 import com.mojang.blaze3d.systems.RenderSystem;
 
+import draylar.tiered.Tiered;
 import draylar.tiered.api.TieredItemTags;
 import draylar.tiered.config.ConfigInit;
 import draylar.tiered.network.TieredClientPacket;
@@ -34,6 +32,8 @@ public class ReforgeScreen extends HandledScreen<ReforgeScreenHandler> implement
 
     public static final Identifier TEXTURE = new Identifier("tiered", "textures/gui/reforging_screen.png");
     public ReforgeScreen.ReforgeButton reforgeButton;
+    private ItemStack last;
+    private List<ItemStack> baseItems;
 
     public ReforgeScreen(ReforgeScreenHandler handler, PlayerInventory playerInventory, Text title) {
         super(handler, playerInventory, title);
@@ -68,25 +68,31 @@ public class ReforgeScreen extends HandledScreen<ReforgeScreenHandler> implement
 
         if (this.isPointWithinBounds(79, 56, 18, 18, (double) mouseX, (double) mouseY)) {
             ItemStack itemStack = this.getScreenHandler().getSlot(1).getStack();
-            if (itemStack != null && !itemStack.isEmpty()) {
-                List<ItemStack> list = new ArrayList<ItemStack>();
-                if (itemStack.getItem() instanceof ToolItem)
-                    list.addAll(Arrays.asList(((ToolItem) itemStack.getItem()).getMaterial().getRepairIngredient().getMatchingStacks()));
-                else if (itemStack.getItem() instanceof ArmorItem)
-                    list.addAll(Arrays.asList(((ArmorItem) itemStack.getItem()).getMaterial().getRepairIngredient().getMatchingStacks()));
-                else {
-                    Iterator<RegistryEntry<Item>> iterator = Registry.ITEM.getOrCreateEntryList(TieredItemTags.REFORGE_BASE_ITEM).iterator();
-                    while (iterator.hasNext())
-                        list.add(iterator.next().value().getDefaultStack());
+            if (itemStack == null || itemStack.isEmpty()) {
+                baseItems = Collections.emptyList();
+            } else {
+                if (itemStack != last) {
+                    last = itemStack;
+                    baseItems = new ArrayList<ItemStack>();
+                    List<ItemStack> items = Tiered.REFORGE_ITEM_DATA_LOADER.getReforgeItems(itemStack.getItem());
+                    if (!items.isEmpty())
+                        baseItems.addAll(items);
+                    else if (itemStack.getItem() instanceof ToolItem toolItem)
+                        baseItems.addAll(Arrays.asList(toolItem.getMaterial().getRepairIngredient().getMatchingStacks()));
+                    else if (itemStack.getItem() instanceof ArmorItem armorItem)
+                        baseItems.addAll(Arrays.asList(armorItem.getMaterial().getRepairIngredient().getMatchingStacks()));
+                    else {
+                        for (RegistryEntry<Item> itemRegistryEntry : Registry.ITEM.getOrCreateEntryList(TieredItemTags.REFORGE_BASE_ITEM))
+                            baseItems.add(itemRegistryEntry.value().getDefaultStack());
+                    }
                 }
-                ItemStack ingredient = this.getScreenHandler().getSlot(0).getStack();
-                if (!list.isEmpty()) {
-                    if (ingredient != null && !ingredient.isEmpty() && list.contains(ingredient)) {
+                if (!baseItems.isEmpty()) {
+                    ItemStack ingredient = this.getScreenHandler().getSlot(0).getStack();
+                    if (ingredient != null && !ingredient.isEmpty() && baseItems.contains(ingredient)) {
                     } else {
                         List<Text> tooltip = new ArrayList<Text>();
                         tooltip.add(Text.translatable("screen.tiered.reforge_ingredient"));
-                        for (int i = 0; i < list.size(); i++)
-                            tooltip.add(list.get(i).getName());
+                        for (ItemStack stack : baseItems) tooltip.add(stack.getName());
                         this.renderTooltip(matrices, tooltip, mouseX, mouseY);
                     }
                 }

@@ -53,4 +53,32 @@ public class ItemVerifier {
 
         return false;
     }
+
+    public String getId() {
+        return id;
+    }
+
+    public TagKey<Item> getTagKey() {
+        return TagKey.of(Registry.ITEM_KEY, new Identifier(tag));
+    }
+
+    @Override
+    public int hashCode() {
+        return id == null ? 0 : id.hashCode() * 17 + (tag == null ? 0 : tag.hashCode());
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (!(obj instanceof ItemVerifier other)) {
+            return false;
+        }
+        if (this != other) {
+            return false;
+        }
+        String thisId = this.id == null ? "" : this.id;
+        String thisTag = this.tag == null ? "" : this.tag;
+        String otherId = other.id == null ? "" : other.id;
+        String otherTag = other.tag == null ? "" : other.tag;
+        return thisId.equals(otherId) && thisTag.equals(otherTag);
+    }
 }
