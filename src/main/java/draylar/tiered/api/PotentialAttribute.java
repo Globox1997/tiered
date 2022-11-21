@@ -4,20 +4,29 @@ import net.minecraft.text.Style;
 import net.minecraft.util.Identifier;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
+import org.apache.commons.lang3.RandomUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.Nullable;
 
 public class PotentialAttribute {
 
     public static class Template {
+        private final String id;
         private final List<ItemVerifier> verifiers;
         private final List<AttributeTemplate> attributes;
         private final HashMap<String, Object> nbtValues;
 
-        public Template(List<ItemVerifier> verifiers, List<AttributeTemplate> attributes, HashMap<String, Object> nbtValues) {
+        public Template(String id, List<ItemVerifier> verifiers, List<AttributeTemplate> attributes, HashMap<String, Object> nbtValues) {
+            this.id = id;
             this.verifiers = verifiers;
             this.attributes = attributes;
             this.nbtValues = nbtValues;
+        }
+
+        public String getId() {
+            return id;
         }
 
         public List<ItemVerifier> getVerifiers() {
@@ -31,6 +40,18 @@ public class PotentialAttribute {
         @Nullable
         public HashMap<String, Object> getNbtValues() {
             return nbtValues;
+        }
+
+        @Override
+        public int hashCode() {
+            return (id == null ? "" : id).hashCode();
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (!(obj instanceof Template other)) return false;
+            if (this != other) return false;
+            return StringUtils.equals(this.id, other.id);
         }
     }
 
@@ -62,7 +83,11 @@ public class PotentialAttribute {
     }
 
     public boolean isValid(Identifier id) {
-        return getTemplate(id) != null;
+        if (getTemplates() == null || getTemplates().isEmpty()) {
+            return false;
+        }
+        return getTemplates().stream().anyMatch(it -> it.verifiers.stream().anyMatch(i -> i.isValid(id)));
+//        return getTemplate(id) != null;
 //        for (ItemVerifier verifier : verifiers) {
 //            if (verifier.isValid(id))
 //                return true;
@@ -82,22 +107,31 @@ public class PotentialAttribute {
                 if (templates == null) {
                     templates = new ArrayList<>();
                 }
-                templates.add(new Template(verifiers, attributes, nbtValues));
+                templates.add(new Template(null, verifiers, attributes, nbtValues));
+            }
+            if (templates != null) {
+                templates = templates.stream().distinct().collect(Collectors.toList());
             }
             processed = true;
         }
         return templates;
     }
+    public Template getTemplate(Identifier itemId) {
+        return getTemplate(itemId, null);
+    }
 
-    public Template getTemplate(Identifier id) {
-        if (getTemplates() == null) {
+    public Template getTemplate(Identifier itemId, String templateId) {
+        if (getTemplates() == null || getTemplates().isEmpty()) {
             return null;
         }
-        for (Template template : getTemplates()) {
-            if (template.verifiers.stream().anyMatch(it -> it.isValid(id))) {
-                return template;
-            }
+        List<Template> hits = getTemplates().stream().filter(it -> it.verifiers.stream().anyMatch(i -> i.isValid(itemId))).toList();
+        if (hits.isEmpty()) {
+            return null;
         }
-        return null;
+        if (hits.size() == 1) {
+            return hits.get(0);
+        }
+        return hits.stream().filter(it -> StringUtils.equals(templateId, it.id)).findFirst()
+                .orElse(hits.stream().min(Comparator.comparing(it -> RandomUtils.nextInt())).orElse(null));
     }
 }

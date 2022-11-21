@@ -6,6 +6,7 @@
   },
   "templates": [
     {
+      "id": "tiered:rare:armor",
       "verifiers": [
         {
           "tag": "c:helmets"
@@ -66,6 +67,7 @@
       ]
     },
     {
+      "id": "tiered:rare:arms",
       "verifiers": [
         {
           "tag": "c:swords"
@@ -89,6 +91,49 @@
         },
         {
           "type": "generic.attack_speed",
+          "modifier": {
+            "name": "tiered:rare",
+            "operation": "MULTIPLY_TOTAL",
+            "amount": 0.1
+          },
+          "optional_equipment_slots": [
+            "MAINHAND",
+            "OFFHAND"
+          ]
+        },
+        {
+          "type": "tiered:generic.durable",
+          "modifier": {
+            "name": "tiered:rare",
+            "operation": "MULTIPLY_TOTAL",
+            "amount": 0.1
+          },
+          "optional_equipment_slots": [
+            "MAINHAND",
+            "OFFHAND"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "tiered:rare:tools",
+      "verifiers": [
+        {
+          "tag": "c:axes"
+        },
+        {
+          "tag": "c:pickaxes"
+        },
+        {
+          "tag": "c:shovels"
+        },
+        {
+          "tag": "c:hoes"
+        }
+      ],
+      "attributes": [
+        {
+          "type": "tiered:generic.dig_speed",
           "modifier": {
             "name": "tiered:rare",
             "operation": "MULTIPLY_TOTAL",

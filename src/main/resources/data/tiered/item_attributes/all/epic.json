@@ -6,6 +6,7 @@
   },
   "templates": [
     {
+      "id": "tiered:epic:armor",
       "verifiers": [
         {
           "tag": "c:helmets"
@@ -80,6 +81,7 @@
       ]
     },
     {
+      "id": "tiered:epic:arms",
       "verifiers": [
         {
           "tag": "c:swords"
@@ -127,6 +129,61 @@
         },
         {
           "type": "tiered:generic.crit_chance",
+          "modifier": {
+            "name": "tiered:epic",
+            "operation": "MULTIPLY_TOTAL",
+            "amount": 0.2
+          },
+          "optional_equipment_slots": [
+            "MAINHAND",
+            "OFFHAND"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "tiered:epic:tools",
+      "verifiers": [
+        {
+          "tag": "c:axes"
+        },
+        {
+          "tag": "c:pickaxes"
+        },
+        {
+          "tag": "c:shovels"
+        },
+        {
+          "tag": "c:hoes"
+        }
+      ],
+      "attributes": [
+        {
+          "type": "tiered:generic.dig_speed",
+          "modifier": {
+            "name": "tiered:epic",
+            "operation": "MULTIPLY_TOTAL",
+            "amount": 0.2
+          },
+          "optional_equipment_slots": [
+            "MAINHAND",
+            "OFFHAND"
+          ]
+        },
+        {
+          "type": "reach-entity-attributes:reach",
+          "modifier": {
+            "name": "tiered:epic",
+            "operation": "ADDITION",
+            "amount": 1
+          },
+          "optional_equipment_slots": [
+            "MAINHAND",
+            "OFFHAND"
+          ]
+        },
+        {
+          "type": "tiered:generic.durable",
           "modifier": {
             "name": "tiered:epic",
             "operation": "MULTIPLY_TOTAL",

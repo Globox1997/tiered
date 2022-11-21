@@ -10,14 +10,10 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.registry.Registry;
-
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Random;
-
+import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.Nullable;
+
+import java.util.*;
 
 public class ModifierUtils {
 
@@ -95,6 +91,9 @@ public class ModifierUtils {
                 stack.getOrCreateSubNbt(Tiered.NBT_SUBTAG_KEY).putString(Tiered.NBT_SUBTAG_DATA_KEY, potentialAttributeID.toString());
 
                 PotentialAttribute.Template template = Tiered.ATTRIBUTE_DATA_LOADER.getItemAttributes().get(new Identifier(potentialAttributeID.toString())).getTemplate(Registry.ITEM.getId(stack.getItem()));
+                if (StringUtils.isNotBlank(template.getId())) {
+                    stack.getOrCreateSubNbt(Tiered.NBT_SUBTAG_KEY).putString(Tiered.NBT_SUBTAG_TEMPLATE_DATA_KEY, template.getId());
+                }
                 HashMap<String, Object> nbtMap = template.getNbtValues();
 
                 // add durability nbt
@@ -137,7 +136,8 @@ public class ModifierUtils {
         if (itemStack.hasNbt() && itemStack.getSubNbt(Tiered.NBT_SUBTAG_KEY) != null) {
 
             Identifier tier = new Identifier(itemStack.getOrCreateSubNbt(Tiered.NBT_SUBTAG_KEY).getString(Tiered.NBT_SUBTAG_DATA_KEY));
-            PotentialAttribute.Template template = Tiered.ATTRIBUTE_DATA_LOADER.getItemAttributes().get(tier).getTemplate(Registry.ITEM.getId(itemStack.getItem()));
+            String templateId = itemStack.getOrCreateSubNbt(Tiered.NBT_SUBTAG_KEY).getString(Tiered.NBT_SUBTAG_TEMPLATE_DATA_KEY);
+            PotentialAttribute.Template template = Tiered.ATTRIBUTE_DATA_LOADER.getItemAttributes().get(tier).getTemplate(Registry.ITEM.getId(itemStack.getItem()), templateId);
 
             HashMap<String, Object> nbtMap = template.getNbtValues();
             List<String> nbtKeys = new ArrayList<String>();

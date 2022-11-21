@@ -1,11 +1,7 @@
 package draylar.tiered;
 
-import draylar.tiered.api.AttributeTemplate;
-import draylar.tiered.api.CustomEntityAttributes;
-import draylar.tiered.api.ModifierUtils;
-import draylar.tiered.api.TieredItemTags;
+import draylar.tiered.api.*;
 import draylar.tiered.config.ConfigInit;
-import draylar.tiered.api.PotentialAttribute;
 import draylar.tiered.data.AttributeDataLoader;
 import draylar.tiered.network.TieredServerPacket;
 import draylar.tiered.reforge.ReforgeScreenHandler;
@@ -18,8 +14,6 @@ import net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents;
 import net.fabricmc.fabric.api.resource.ResourceManagerHelper;
 import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.entity.EquipmentSlot;
-import net.minecraft.entity.attribute.EntityAttribute;
-import net.minecraft.entity.attribute.EntityAttributeModifier;
 import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.item.ArmorItem;
 import net.minecraft.item.ItemStack;
@@ -32,19 +26,11 @@ import net.minecraft.screen.ScreenHandlerType;
 import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.registry.Registry;
-
+import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.UUID;
-
-import com.google.common.collect.LinkedListMultimap;
-import com.google.common.collect.Multimap;
+import java.util.*;
 
 @SuppressWarnings("unused")
 public class Tiered implements ModInitializer {
@@ -75,6 +61,7 @@ public class Tiered implements ModInitializer {
     public static final Identifier ATTRIBUTE_SYNC_PACKET = new Identifier("attribute_sync");
     public static final String NBT_SUBTAG_KEY = "Tiered";
     public static final String NBT_SUBTAG_DATA_KEY = "Tier";
+    public static final String NBT_SUBTAG_TEMPLATE_DATA_KEY = "Template";
 
     @Override
     public void onInitialize() {
@@ -105,11 +92,15 @@ public class Tiered implements ModInitializer {
         ModifyItemAttributeModifiersCallback.EVENT.register((itemStack, slot, modifiers) -> {
             if (itemStack.getSubNbt(Tiered.NBT_SUBTAG_KEY) != null) {
                 Identifier tier = new Identifier(itemStack.getOrCreateSubNbt(Tiered.NBT_SUBTAG_KEY).getString(Tiered.NBT_SUBTAG_DATA_KEY));
+                String templateId = itemStack.getOrCreateSubNbt(Tiered.NBT_SUBTAG_KEY).getString(Tiered.NBT_SUBTAG_TEMPLATE_DATA_KEY);
 
                 if (!itemStack.hasNbt() || !itemStack.getNbt().contains("AttributeModifiers", 9)) {
                     PotentialAttribute potentialAttribute = Tiered.ATTRIBUTE_DATA_LOADER.getItemAttributes().get(tier);
                     if (potentialAttribute != null) {
-                        PotentialAttribute.Template template = potentialAttribute.getTemplate(Registry.ITEM.getId(itemStack.getItem()));
+                        PotentialAttribute.Template template = potentialAttribute.getTemplate(Registry.ITEM.getId(itemStack.getItem()), templateId);
+                        if (template.getId() != null && !StringUtils.equals(templateId, template.getId())) {
+                            itemStack.getOrCreateSubNbt(Tiered.NBT_SUBTAG_KEY).putString(Tiered.NBT_SUBTAG_TEMPLATE_DATA_KEY, template.getId());
+                        }
                         template.getAttributes().forEach(attributeTemplate -> {
                             // get required equipment slots
                             if (attributeTemplate.getRequiredEquipmentSlots() != null) {
@@ -219,7 +210,9 @@ public class Tiered implements ModInitializer {
 
                 // found an ID
                 if (attributeID != null) {
-                    PotentialAttribute.Template template = Tiered.ATTRIBUTE_DATA_LOADER.getItemAttributes().get(new Identifier(attributeID.toString())).getTemplate(Registry.ITEM.getId(itemStack.getItem()));
+                    String templateId = itemStack.getOrCreateSubNbt(Tiered.NBT_SUBTAG_KEY).getString(Tiered.NBT_SUBTAG_TEMPLATE_DATA_KEY);
+                    PotentialAttribute.Template template = Tiered.ATTRIBUTE_DATA_LOADER.getItemAttributes().get(new Identifier(attributeID.toString()))
+                            .getTemplate(Registry.ITEM.getId(itemStack.getItem()), templateId);
 
                     HashMap<String, Object> nbtMap = template.getNbtValues();
                     // update durability nbt
@@ -258,6 +251,10 @@ public class Tiered implements ModInitializer {
                     }
                     if (itemStack.getSubNbt(Tiered.NBT_SUBTAG_KEY) == null)
                         itemStack.getOrCreateSubNbt(Tiered.NBT_SUBTAG_KEY).putString(Tiered.NBT_SUBTAG_DATA_KEY, attributeID.toString());
+
+                    if (template.getId() != null && !StringUtils.equals(templateId, template.getId())) {
+                        itemStack.getOrCreateSubNbt(Tiered.NBT_SUBTAG_KEY).putString(Tiered.NBT_SUBTAG_TEMPLATE_DATA_KEY, template.getId());
+                    }
 
                     playerInventory.setStack(u, itemStack);
                 }

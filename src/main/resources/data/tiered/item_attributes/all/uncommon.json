@@ -6,6 +6,7 @@
     },
     "templates": [
         {
+            "id": "tiered:uncommon:armor",
             "verifiers": [
                 {
                     "tag": "c:helmets"
@@ -52,6 +53,7 @@
             ]
         },
         {
+            "id": "tiered:uncommon:arms",
             "verifiers": [
                 {
                     "tag": "c:swords"
@@ -67,6 +69,49 @@
                         "name": "tiered:uncommon",
                         "operation": "MULTIPLY_TOTAL",
                         "amount": 0.1
+                    },
+                    "optional_equipment_slots": [
+                        "MAINHAND",
+                        "OFFHAND"
+                    ]
+                },
+                {
+                    "type": "tiered:generic.durable",
+                    "modifier": {
+                        "name": "tiered:uncommon",
+                        "operation": "MULTIPLY_TOTAL",
+                        "amount": 0.1
+                    },
+                    "optional_equipment_slots": [
+                        "MAINHAND",
+                        "OFFHAND"
+                    ]
+                }
+            ]
+        },
+        {
+            "id": "tiered:uncommon:tools",
+            "verifiers": [
+                {
+                    "tag": "c:axes"
+                },
+                {
+                    "tag": "c:pickaxes"
+                },
+                {
+                    "tag": "c:shovels"
+                },
+                {
+                    "tag": "c:hoes"
+                }
+            ],
+            "attributes": [
+                {
+                    "type": "tiered:generic.dig_speed",
+                    "modifier": {
+                        "name": "tiered:rare",
+                        "operation": "MULTIPLY_TOTAL",
+                        "amount": 0.05
                     },
                     "optional_equipment_slots": [
                         "MAINHAND",
