@@ -39,6 +39,9 @@
     },
     {
       "id": "minecraft:fishing_rod"
+    },
+    {
+      "id": "minecraft:trident"
     }
   ],
   "weight": 50,

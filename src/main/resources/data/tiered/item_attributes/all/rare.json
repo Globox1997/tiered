@@ -74,6 +74,9 @@
         },
         {
           "tag": "c:axes"
+        },
+        {
+          "id": "minecraft:trident"
         }
       ],
       "attributes": [
