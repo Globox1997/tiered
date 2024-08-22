@@ -1,6 +1,6 @@
 ### Added:
-- Added modifier restriction item tag 
+- 
 ### Fixed:
 - 
 ### Changed:
-- 
+- Updated to mc 1.21

@@ -14,7 +14,7 @@
             "type": "generic.armor",
             "modifier": {
                 "name": "tiered:epic_shield_4",
-                "operation": "ADDITION",
+                "operation": "ADD_VALUE",
                 "amount": 2
             },
             "optional_equipment_slots": [
@@ -26,7 +26,7 @@
             "type": "generic.max_health",
             "modifier": {
                 "name": "tiered:epic_shield_4",
-                "operation": "ADDITION",
+                "operation": "ADD_VALUE",
                 "amount": 3
             },
             "optional_equipment_slots": [

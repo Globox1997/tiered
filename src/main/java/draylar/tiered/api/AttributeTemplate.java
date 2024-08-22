@@ -1,21 +1,26 @@
 package draylar.tiered.api;
 
+import java.util.Optional;
+import java.util.function.BiConsumer;
+
 import com.google.common.collect.Multimap;
 import com.google.gson.annotations.SerializedName;
-import draylar.tiered.Tiered;
+import net.minecraft.component.type.AttributeModifierSlot;
+import net.minecraft.component.type.AttributeModifiersComponent;
 import net.minecraft.entity.EquipmentSlot;
 import net.minecraft.entity.attribute.EntityAttribute;
 import net.minecraft.entity.attribute.EntityAttributeModifier;
 import net.minecraft.registry.Registries;
+import net.minecraft.registry.entry.RegistryEntry;
 import net.minecraft.util.Identifier;
 
 /**
  * Stores information on an AttributeModifier template applied to an ItemStack.
- *
+ * <p>
  * The ID of the AttributeTemplate is the logical ID used to determine what "type" of attribute of is. An EntityAttributeModifier has: - a UUID, which is a unique identifier to separate different
  * attributes of the same type - a name, which is used for generating a non-specified UUID and displaying in tooltips in some context - an amount, which is used in combination with the operation to
- * modify the final relevant value - a modifier, which can be something such as addition or subtraction
- *
+ * modify the final relevant value - a modifier, which can be something such as ADD_VALUE or subtraction
+ * <p>
  * The EquipmentSlot is used to only apply this template to certain items.
  */
 public class AttributeTemplate {
@@ -60,18 +65,19 @@ public class AttributeTemplate {
      * <p>
      * Note that this method assumes the given {@link Multimap} is mutable.
      *
-     * @param multimap map to add {@link AttributeTemplate}
+     * @param attributeConsumer biconsumer to accept {@link AttributeTemplate}
      * @param slot
      */
-    public void realize(Multimap<EntityAttribute, EntityAttributeModifier> multimap, EquipmentSlot slot) {
-        EntityAttributeModifier cloneModifier = new EntityAttributeModifier(Tiered.MODIFIERS[slot.getArmorStandSlotId()], entityAttributeModifier.getName() + "_" + slot.getName(),
-                entityAttributeModifier.getValue(), entityAttributeModifier.getOperation());
+    public void applyModifiers(EquipmentSlot slot, BiConsumer<RegistryEntry<EntityAttribute>, EntityAttributeModifier> attributeConsumer) {
+        Optional<RegistryEntry.Reference<EntityAttribute>> optional = Registries.ATTRIBUTE.getEntry(Identifier.of(this.attributeTypeID));
 
-        EntityAttribute key = Registries.ATTRIBUTE.get(new Identifier(attributeTypeID));
-        if (key == null) {
-            Tiered.LOGGER.warn(String.format("%s was referenced as an attribute type, but it does not exist! A data file in /tiered/item_attributes/ has an invalid type property.", attributeTypeID));
-        } else {
-            multimap.put(key, cloneModifier);
+        if (optional.isPresent()) {
+            EntityAttributeModifier cloneModifier = new EntityAttributeModifier(entityAttributeModifier.id(), entityAttributeModifier.value(), entityAttributeModifier.operation());
+
+            AttributeModifiersComponent.Entry entry = new AttributeModifiersComponent.Entry(optional.get(), cloneModifier, AttributeModifierSlot.forEquipmentSlot(slot));
+            if (entry.slot().matches(slot)) {
+                attributeConsumer.accept(entry.attribute(), entry.modifier());
+            }
         }
     }
 }

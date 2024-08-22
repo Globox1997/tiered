@@ -2,7 +2,7 @@
     "id": "tiered:epic_melee_4",
     "verifiers": [
         {
-            "tag": "c:swords"
+            "tag": "minecraft:swords"
         }
     ],
     "weight": 8,
@@ -14,7 +14,7 @@
             "type": "generic.attack_damage",
             "modifier": {
                 "name": "tiered:epic_melee_4",
-                "operation": "MULTIPLY_TOTAL",
+                "operation": "ADD_MULTIPLIED_TOTAL",
                 "amount": 0.1
             },
             "optional_equipment_slots": [
@@ -25,7 +25,7 @@
             "type": "tiered:generic.durable",
             "modifier": {
                 "name": "tiered:epic_melee_4",
-                "operation": "MULTIPLY_TOTAL",
+                "operation": "ADD_MULTIPLIED_TOTAL",
                 "amount": 0.2
             },
             "optional_equipment_slots": [
@@ -36,7 +36,7 @@
             "type": "generic.luck",
             "modifier": {
                 "name": "tiered:epic_melee_4",
-                "operation": "ADDITION",
+                "operation": "ADD_VALUE",
                 "amount": 1
             },
             "optional_equipment_slots": [

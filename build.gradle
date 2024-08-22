@@ -1,5 +1,5 @@
 plugins {
-	id 'fabric-loom' version '1.5-SNAPSHOT'
+	id 'fabric-loom' version '1.7-SNAPSHOT'
 	id 'maven-publish'
 }
 
@@ -11,7 +11,6 @@ repositories {
 	maven { url 'https://jitpack.io' }
 	maven { url "https://maven.shedaniel.me/" }
     maven { url "https://maven.terraformersmc.com/" }
-	maven { url "https://maven.jamieswhiteshirt.com/libs-release/" }
 	maven { url "https://api.modrinth.com/maven" }
 	maven { url "https://cursemaven.com" }
 	maven { url "https://maven.willbl.dev/releases" }
@@ -36,32 +35,21 @@ dependencies {
     	exclude(group: "net.fabricmc.fabric-api")
   	}
     // LibZ
-    modImplementation ('maven.modrinth:libz:1.0.2+1.20.1') {
+    modImplementation ('maven.modrinth:libz:1.0.3+1.21') {
 		exclude(group: "net.fabricmc.fabric-api")
 	}
-	// Reach Entity Attributes 
-	modImplementation include ("com.jamieswhiteshirt:reach-entity-attributes:${project.reach_attributes_version}"), {
-		exclude(group: "net.fabricmc.fabric-api")
-	}
-	// Autotag
-	modImplementation ("com.github.apace100:autotag-api:${autotag_version}")
-	modImplementation ("com.github.apace100:autotag:${autotag_version}")
     // LevelZ
     modCompileOnly ('maven.modrinth:levelz:1.4.10+1.20.1') {
 		exclude(group: "net.fabricmc.fabric-api")
 	}
-	// TooltipFix
-	modCompileOnly ("maven.modrinth:tooltipfix:1.1.1-1.19.3"),{
-    	exclude(group: "net.fabricmc.fabric-api")
-  	}
+	// // TooltipFix
+	// modCompileOnly ("maven.modrinth:tooltipfix:1.1.1-1.19.3"),{
+    // 	exclude(group: "net.fabricmc.fabric-api")
+  	// }
 	// EasyAnvils
 	modCompileOnly ("curse.maven:easy-anvils-682567:4556543"),{
     	exclude(group: "net.fabricmc.fabric-api")
   	}
-	// Additional Entity Attributes
-	// modImplementation include ("com.github.DaFuqs:AdditionalEntityAttributes:d0cd35d"), {
-	// 	exclude(group: "net.fabricmc.fabric-api")
-	// }
 }
 
 processResources {
@@ -73,8 +61,7 @@ processResources {
 }
 
 tasks.withType(JavaCompile).configureEach {
-	// Minecraft 1.18 (1.18-pre2) upwards uses Java 17.
-	it.options.release = 17
+	it.options.release = 21
 }
 
 java {
@@ -83,8 +70,8 @@ java {
 	// If you remove this line, sources will not be generated.
 	withSourcesJar()
 	
-	sourceCompatibility = JavaVersion.VERSION_17
-	targetCompatibility = JavaVersion.VERSION_17
+	sourceCompatibility = JavaVersion.VERSION_21
+	targetCompatibility = JavaVersion.VERSION_21
 }
 
 jar {

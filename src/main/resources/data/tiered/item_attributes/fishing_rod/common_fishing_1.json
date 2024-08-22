@@ -14,7 +14,7 @@
       "type": "generic.luck",
       "modifier": {
         "name": "tiered:common_fishing_1",
-        "operation": "ADDITION",
+        "operation": "ADD_VALUE",
         "amount": -3
       },
       "optional_equipment_slots": [

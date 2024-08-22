@@ -29,7 +29,9 @@
                 "tiered:common_shield_1",
                 "tiered:common_shield_2",
                 "tiered:common_shield_3",
-                "tiered:common_shield_4"
+                "tiered:common_shield_4",
+                "tiered:common_elytra_1",
+                "tiered:common_elytra_2"
             ]
         },
         {
@@ -61,7 +63,9 @@
                 "tiered:uncommon_shield_1",
                 "tiered:uncommon_shield_2",
                 "tiered:uncommon_shield_3",
-                "tiered:uncommon_shield_4"
+                "tiered:uncommon_shield_4",
+                "tiered:uncommon_elytra_1",
+                "tiered:uncommon_elytra_2"
             ]
         },
         {
@@ -93,7 +97,9 @@
                 "tiered:rare_shield_1",
                 "tiered:rare_shield_2",
                 "tiered:rare_shield_3",
-                "tiered:rare_shield_4"
+                "tiered:rare_shield_4",
+                "tiered:rare_elytra_1",
+                "tiered:rare_elytra_2"
             ]
         },
         {
@@ -125,7 +131,9 @@
                 "tiered:epic_shield_1",
                 "tiered:epic_shield_2",
                 "tiered:epic_shield_3",
-                "tiered:epic_shield_4"
+                "tiered:epic_shield_4",
+                "tiered:epic_elytra_1",
+                "tiered:epic_elytra_2"
             ]
         },
         {
@@ -157,7 +165,9 @@
                 "tiered:legendary_shield_1",
                 "tiered:legendary_shield_2",
                 "tiered:legendary_shield_3",
-                "tiered:legendary_shield_4"
+                "tiered:legendary_shield_4",
+                "tiered:legendary_elytra_1",
+                "tiered:legendary_elytra_2"
             ]
         },
         {
@@ -189,7 +199,9 @@
                 "tiered:unique_shield_1",
                 "tiered:unique_shield_2",
                 "tiered:unique_shield_3",
-                "tiered:unique_shield_4"
+                "tiered:unique_shield_4",
+                "tiered:unique_elytra_1",
+                "tiered:unique_elytra_2"
             ]
         }
     ]

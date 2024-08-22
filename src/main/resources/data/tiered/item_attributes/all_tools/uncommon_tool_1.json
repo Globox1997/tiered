@@ -2,16 +2,16 @@
     "id": "tiered:uncommon_tool_1",
     "verifiers": [
         {
-            "tag": "c:axes"
+            "tag": "minecraft:axes"
         },
         {
-            "tag": "c:pickaxes"
+            "tag": "minecraft:pickaxes"
         },
         {
-            "tag": "c:shovels"
+            "tag": "minecraft:shovels"
         },
         {
-            "tag": "c:hoes"
+            "tag": "minecraft:hoes"
         }
     ],
     "weight": 35,
@@ -23,7 +23,7 @@
             "type": "tiered:generic.durable",
             "modifier": {
                 "name": "tiered:uncommon_tool_1",
-                "operation": "MULTIPLY_TOTAL",
+                "operation": "ADD_MULTIPLIED_TOTAL",
                 "amount": -0.2
             },
             "optional_equipment_slots": [
@@ -31,10 +31,10 @@
             ]
         },
         {
-            "type": "reach-entity-attributes:reach",
+            "type": "player.block_interaction_range",
             "modifier": {
                 "name": "tiered:uncommon_tool_1",
-                "operation": "ADDITION",
+                "operation": "ADD_VALUE",
                 "amount": -1
             },
             "optional_equipment_slots": [

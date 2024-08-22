@@ -2,7 +2,7 @@
     "id": "tiered:legendary_melee_3",
     "verifiers": [
         {
-            "tag": "c:swords"
+            "tag": "minecraft:swords"
         }
     ],
     "weight": 3,
@@ -14,7 +14,7 @@
             "type": "tiered:generic.crit_chance",
             "modifier": {
                 "name": "tiered:legendary_melee_3",
-                "operation": "MULTIPLY_TOTAL",
+                "operation": "ADD_MULTIPLIED_TOTAL",
                 "amount": 0.15
             },
             "optional_equipment_slots": [
@@ -25,7 +25,7 @@
             "type": "tiered:generic.durable",
             "modifier": {
                 "name": "tiered:legendary_melee_3",
-                "operation": "MULTIPLY_TOTAL",
+                "operation": "ADD_MULTIPLIED_TOTAL",
                 "amount": 0.3
             },
             "optional_equipment_slots": [
@@ -36,7 +36,7 @@
             "type": "generic.luck",
             "modifier": {
                 "name": "tiered:legendary_melee_3",
-                "operation": "ADDITION",
+                "operation": "ADD_VALUE",
                 "amount": 2
             },
             "optional_equipment_slots": [

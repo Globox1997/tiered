@@ -25,7 +25,7 @@ public class TooltipBorderLoader implements SimpleSynchronousResourceReloadListe
 
     @Override
     public Identifier getFabricId() {
-        return new Identifier("tiered", "tooltip_loader");
+        return Identifier.of("tiered", "tooltip_loader");
     }
 
     @Override
@@ -40,8 +40,9 @@ public class TooltipBorderLoader implements SimpleSynchronousResourceReloadListe
                     JsonObject data2 = (JsonObject) data.getAsJsonArray("tooltips").get(u);
                     List<String> decider = new ArrayList<String>();
 
-                    for (int i = 0; i < data2.getAsJsonArray("decider").size(); i++)
-                        decider.add("{Tier:\"" + data2.getAsJsonArray("decider").get(i).getAsString() + "\"}");
+                    for (int i = 0; i < data2.getAsJsonArray("decider").size(); i++) {
+                        decider.add(data2.getAsJsonArray("decider").get(i).getAsString());
+                    }
 
                     TieredClient.BORDER_TEMPLATES.add(new BorderTemplate(data2.get("index").getAsInt(), data2.get("texture").getAsString(),
                             new BigInteger(data2.get("start_border_gradient").getAsString(), 16).intValue(), new BigInteger(data2.get("end_border_gradient").getAsString(), 16).intValue(),

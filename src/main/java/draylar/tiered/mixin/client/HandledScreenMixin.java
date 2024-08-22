@@ -9,6 +9,7 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.LocalCapture;
 
+import draylar.tiered.Tiered;
 import draylar.tiered.TieredClient;
 import draylar.tiered.config.ConfigInit;
 import draylar.tiered.util.TieredTooltip;
@@ -32,11 +33,10 @@ public abstract class HandledScreenMixin extends Screen {
 
     @Inject(method = "drawMouseoverTooltip", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/DrawContext;drawTooltip(Lnet/minecraft/client/font/TextRenderer;Ljava/util/List;Ljava/util/Optional;II)V"), cancellable = true, locals = LocalCapture.CAPTURE_FAILSOFT)
     protected void drawMouseoverTooltipMixin(DrawContext context, int x, int y, CallbackInfo info, ItemStack stack) {
-        if (ConfigInit.CONFIG.tieredTooltip && stack.hasNbt() && stack.getNbt().contains("Tiered")) {
-
-            String nbtString = stack.getNbt().getCompound("Tiered").asString();
+        if (ConfigInit.CONFIG.tieredTooltip && stack.get(Tiered.TIER) != null) {
+            String tier = stack.get(Tiered.TIER).tier();
             for (int i = 0; i < TieredClient.BORDER_TEMPLATES.size(); i++) {
-                if (!TieredClient.BORDER_TEMPLATES.get(i).containsStack(stack) && TieredClient.BORDER_TEMPLATES.get(i).containsDecider(nbtString)) {
+                if (!TieredClient.BORDER_TEMPLATES.get(i).containsStack(stack) && TieredClient.BORDER_TEMPLATES.get(i).containsDecider(tier)) {
                     TieredClient.BORDER_TEMPLATES.get(i).addStack(stack);
                 } else if (TieredClient.BORDER_TEMPLATES.get(i).containsStack(stack)) {
                     List<Text> text = Screen.getTooltipFromItem(client, stack);

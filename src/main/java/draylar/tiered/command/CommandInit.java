@@ -2,17 +2,15 @@ package draylar.tiered.command;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 
 import draylar.tiered.Tiered;
 import draylar.tiered.api.AttributeTemplate;
 import draylar.tiered.api.ModifierUtils;
+import draylar.tiered.api.TierComponent;
 import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
 import net.minecraft.command.argument.EntityArgumentType;
 import net.minecraft.item.ItemStack;
-import net.minecraft.nbt.NbtCompound;
 import net.minecraft.registry.Registries;
 import net.minecraft.server.command.CommandManager;
 import net.minecraft.server.command.ServerCommandSource;
@@ -48,10 +46,8 @@ public class CommandInit {
 
     // 0: common; 1: uncommon; 2: rare; 3: epic; 4: legendary; 5: unique
     private static int executeCommand(ServerCommandSource source, Collection<ServerPlayerEntity> targets, int tier) {
-        Iterator<ServerPlayerEntity> var3 = targets.iterator();
         // loop over players
-        while (var3.hasNext()) {
-            ServerPlayerEntity serverPlayerEntity = var3.next();
+        for (ServerPlayerEntity serverPlayerEntity : targets) {
             ItemStack itemStack = serverPlayerEntity.getMainHandStack();
 
             if (itemStack.isEmpty()) {
@@ -60,7 +56,7 @@ public class CommandInit {
             }
 
             if (tier == -1) {
-                if (itemStack.getSubNbt(Tiered.NBT_SUBTAG_KEY) != null) {
+                if (itemStack.get(Tiered.TIER) != null) {
                     ModifierUtils.removeItemStackAttribute(itemStack);
 
                     source.sendFeedback(() -> Text.translatable("commands.tiered.untier", itemStack.getItem().getName(itemStack).getString(), serverPlayerEntity.getDisplayName()), true);
@@ -71,7 +67,7 @@ public class CommandInit {
                 ArrayList<Identifier> potentialAttributes = new ArrayList<Identifier>();
                 Tiered.ATTRIBUTE_DATA_LOADER.getItemAttributes().forEach((id, attribute) -> {
                     if (attribute.isValid(Registries.ITEM.getId(itemStack.getItem()))) {
-                        potentialAttributes.add(new Identifier(attribute.getID()));
+                        potentialAttributes.add(Identifier.of(attribute.getID()));
                     }
                 });
                 if (potentialAttributes.size() <= 0) {
@@ -80,12 +76,12 @@ public class CommandInit {
                 } else {
 
                     List<Identifier> potentialTier = new ArrayList<Identifier>();
-                    for (int i = 0; i < potentialAttributes.size(); i++) {
-                        if (potentialAttributes.get(i).getPath().contains(TIER_LIST.get(tier))) {
-                            if (TIER_LIST.get(tier).equals("common") && potentialAttributes.get(i).getPath().contains("uncommon")) {
+                    for (Identifier potentialAttribute : potentialAttributes) {
+                        if (potentialAttribute.getPath().contains(TIER_LIST.get(tier))) {
+                            if (TIER_LIST.get(tier).equals("common") && potentialAttribute.getPath().contains("uncommon")) {
                                 continue;
                             }
-                            potentialTier.add(potentialAttributes.get(i));
+                            potentialTier.add(potentialAttribute);
                         }
                     }
 
@@ -98,42 +94,19 @@ public class CommandInit {
 
                         Identifier attribute = potentialTier.get(serverPlayerEntity.getWorld().getRandom().nextInt(potentialTier.size()));
                         if (attribute != null) {
-                            itemStack.getOrCreateSubNbt(Tiered.NBT_SUBTAG_KEY).putString(Tiered.NBT_SUBTAG_DATA_KEY, attribute.toString());
-
-                            HashMap<String, Object> nbtMap = Tiered.ATTRIBUTE_DATA_LOADER.getItemAttributes().get(new Identifier(attribute.toString())).getNbtValues();
-
                             // add durability nbt
-                            List<AttributeTemplate> attributeList = Tiered.ATTRIBUTE_DATA_LOADER.getItemAttributes().get(new Identifier(attribute.toString())).getAttributes();
-                            for (int i = 0; i < attributeList.size(); i++)
-                                if (attributeList.get(i).getAttributeTypeID().equals("tiered:generic.durable")) {
-                                    if (nbtMap == null)
-                                        nbtMap = new HashMap<String, Object>();
-                                    nbtMap.put("durable", (double) Math.round(attributeList.get(i).getEntityAttributeModifier().getValue() * 100.0) / 100.0);
+                            float durableFactor = -1f;
+                            int operation = 0;
+                            List<AttributeTemplate> attributeList = Tiered.ATTRIBUTE_DATA_LOADER.getItemAttributes().get(Identifier.of(attribute.toString())).getAttributes();
+                            for (AttributeTemplate attributeTemplate : attributeList) {
+                                if (attributeTemplate.getAttributeTypeID().equals("tiered:generic.durable")) {
+                                    durableFactor = (float) Math.round(attributeTemplate.getEntityAttributeModifier().value() * 100.0f) / 100.0f;
+                                    operation = attributeTemplate.getEntityAttributeModifier().operation().getId();
                                     break;
                                 }
-                            // add nbtMap
-                            if (nbtMap != null) {
-                                NbtCompound nbtCompound = itemStack.getNbt();
-                                for (HashMap.Entry<String, Object> entry : nbtMap.entrySet()) {
-                                    String key = entry.getKey();
-                                    Object value = entry.getValue();
-
-                                    // json list will get read as ArrayList class
-                                    // json map will get read as linkedtreemap
-                                    // json integer is read by gson -> always double
-                                    if (value instanceof String)
-                                        nbtCompound.putString(key, (String) value);
-                                    else if (value instanceof Boolean)
-                                        nbtCompound.putBoolean(key, (boolean) value);
-                                    else if (value instanceof Double) {
-                                        if ((double) value % 1.0 < 0.0001D)
-                                            nbtCompound.putInt(key, (int) Math.round((double) value));
-                                        else
-                                            nbtCompound.putDouble(key, Math.round((double) value * 100.0) / 100.0);
-                                    }
-                                }
-                                itemStack.setNbt(nbtCompound);
                             }
+                            itemStack.set(Tiered.TIER, new TierComponent(attribute.toString(), durableFactor, operation));
+
                             source.sendFeedback(() -> Text.translatable("commands.tiered.tier", itemStack.getItem().getName(itemStack).getString(), serverPlayerEntity.getDisplayName()), true);
                         }
                     }

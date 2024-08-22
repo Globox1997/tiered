@@ -2,16 +2,16 @@
     "id": "tiered:common_armor_3",
     "verifiers": [
         {
-            "tag": "c:helmets"
+            "tag": "minecraft:head_armor"
         },
         {
-            "tag": "c:chestplates"
+            "tag": "minecraft:chest_armor"
         },
         {
-            "tag": "c:leggings"
+            "tag": "minecraft:leg_armor"
         },
         {
-            "tag": "c:boots"
+            "tag": "minecraft:foot_armor"
         }
     ],
     "weight": 50,
@@ -23,7 +23,7 @@
             "type": "tiered:generic.durable",
             "modifier": {
                 "name": "tiered:common_armor_3",
-                "operation": "MULTIPLY_TOTAL",
+                "operation": "ADD_MULTIPLIED_TOTAL",
                 "amount": -0.5
             },
             "optional_equipment_slots": [

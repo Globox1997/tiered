@@ -2,16 +2,16 @@
     "id": "tiered:legendary_armor_1",
     "verifiers": [
         {
-            "tag": "c:helmets"
+            "tag": "minecraft:head_armor"
         },
         {
-            "tag": "c:chestplates"
+            "tag": "minecraft:chest_armor"
         },
         {
-            "tag": "c:leggings"
+            "tag": "minecraft:leg_armor"
         },
         {
-            "tag": "c:boots"
+            "tag": "minecraft:foot_armor"
         }
     ],
     "weight": 3,
@@ -23,7 +23,7 @@
             "type": "generic.armor",
             "modifier": {
                 "name": "tiered:legendary_armor_1",
-                "operation": "ADDITION",
+                "operation": "ADD_VALUE",
                 "amount": 2
             },
             "optional_equipment_slots": [
@@ -37,7 +37,7 @@
             "type": "generic.armor_toughness",
             "modifier": {
                 "name": "tiered:legendary_armor_1",
-                "operation": "ADDITION",
+                "operation": "ADD_VALUE",
                 "amount": 1
             },
             "optional_equipment_slots": [
@@ -51,7 +51,7 @@
             "type": "generic.max_health",
             "modifier": {
                 "name": "tiered:legendary_armor_1",
-                "operation": "ADDITION",
+                "operation": "ADD_VALUE",
                 "amount": 4
             },
             "optional_equipment_slots": [

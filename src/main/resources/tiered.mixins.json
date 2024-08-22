@@ -1,25 +1,24 @@
 {
   "required": true,
   "package": "draylar.tiered.mixin",
-  "compatibilityLevel": "JAVA_17",
+  "compatibilityLevel": "JAVA_21",
   "plugin": "draylar.tiered.mixin.compat.TieredMixinPlugin",
   "mixins": [
     "ItemStackMixin",
     "LivingEntityMixin",
     "PlayerEntityMixin",
     "ItemMixin",
-    "ArrowEntityMixin",
     "TridentEntityMixin",
-    "SpectralArrowEntityMixin",
     "LootTableMixin",
     "AnvilScreenHandlerMixin",
     "MerchantScreenHandlerMixin",
-    "BowItemMixin",
-    "CrossbowItemMixin",
+    "RangedWeaponItemMixin",
     "ItemFrameEntityMixin",
     "MobEntityMixin",
     "ArmorStandEntityMixin",
-    "ArmorItemMixin"
+    "CraftingScreenHandlerMixin",
+    "access.StyleAccessor",
+    "access.ServerPlayerEntityAccessor"
   ],
   "client": [
     "client.ItemStackClientMixin",

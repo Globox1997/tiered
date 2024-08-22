@@ -14,7 +14,6 @@ import net.minecraft.entity.EquipmentSlot;
 import net.minecraft.entity.SpawnReason;
 import net.minecraft.entity.mob.MobEntity;
 import net.minecraft.item.ItemStack;
-import net.minecraft.nbt.NbtCompound;
 import net.minecraft.world.LocalDifficulty;
 import net.minecraft.world.ServerWorldAccess;
 
@@ -22,8 +21,7 @@ import net.minecraft.world.ServerWorldAccess;
 public class MobEntityMixin {
 
     @Inject(method = "initialize", at = @At("TAIL"))
-    private void initializeMixin(ServerWorldAccess world, LocalDifficulty difficulty, SpawnReason spawnReason, @Nullable EntityData entityData, @Nullable NbtCompound entityNbt,
-            CallbackInfoReturnable<EntityData> info) {
+    private void initializeMixin(ServerWorldAccess world, LocalDifficulty difficulty, SpawnReason spawnReason, @Nullable EntityData entityData, CallbackInfoReturnable<EntityData> info) {
         if (ConfigInit.CONFIG.entityItemModifier) {
             for (EquipmentSlot equipmentSlot : EquipmentSlot.values()) {
                 ItemStack itemStack = this.getEquippedStack(equipmentSlot);

@@ -2,16 +2,16 @@
     "id": "tiered:epic_armor_2",
     "verifiers": [
         {
-            "tag": "c:helmets"
+            "tag": "minecraft:head_armor"
         },
         {
-            "tag": "c:chestplates"
+            "tag": "minecraft:chest_armor"
         },
         {
-            "tag": "c:leggings"
+            "tag": "minecraft:leg_armor"
         },
         {
-            "tag": "c:boots"
+            "tag": "minecraft:foot_armor"
         }
     ],
     "weight": 8,
@@ -23,7 +23,7 @@
             "type": "generic.armor_toughness",
             "modifier": {
                 "name": "tiered:epic_armor_2",
-                "operation": "ADDITION",
+                "operation": "ADD_VALUE",
                 "amount": 1
             },
             "optional_equipment_slots": [
@@ -37,7 +37,7 @@
             "type": "tiered:generic.durable",
             "modifier": {
                 "name": "tiered:epic_armor_2",
-                "operation": "MULTIPLY_TOTAL",
+                "operation": "ADD_MULTIPLIED_TOTAL",
                 "amount": 0.2
             },
             "optional_equipment_slots": [
@@ -51,7 +51,7 @@
             "type": "generic.movement_speed",
             "modifier": {
                 "name": "tiered:epic_armor_2",
-                "operation": "MULTIPLY_TOTAL",
+                "operation": "ADD_MULTIPLIED_TOTAL",
                 "amount": 0.05
             },
             "optional_equipment_slots": [

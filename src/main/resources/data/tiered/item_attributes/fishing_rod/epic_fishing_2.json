@@ -14,7 +14,7 @@
             "type": "tiered:generic.durable",
             "modifier": {
                 "name": "tiered:epic_fishing_2",
-                "operation": "MULTIPLY_TOTAL",
+                "operation": "ADD_MULTIPLIED_TOTAL",
                 "amount": 0.3
             },
             "optional_equipment_slots": [

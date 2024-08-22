@@ -20,7 +20,7 @@ public class BorderTemplate {
     public BorderTemplate(int index, String texture, int startGradient, int endGradient, int backgroundGradient, List<String> decider) {
         this.index = index;
         this.texture = texture;
-        this.identifier = new Identifier("tiered", "textures/gui/" + this.texture + ".png");
+        this.identifier = Identifier.of("tiered", "textures/gui/" + this.texture + ".png");
         this.startGradient = startGradient;
         this.endGradient = endGradient;
         this.backgroundGradient = backgroundGradient;
@@ -57,14 +57,16 @@ public class BorderTemplate {
     }
 
     public boolean containsDecider(String string) {
-        if (this.decider.contains(string))
+        if (this.decider.contains(string)) {
             return true;
+        }
         return false;
     }
 
     public void addStack(ItemStack itemStack) {
-        if (!this.stacks.contains(itemStack))
+        if (!this.stacks.contains(itemStack)) {
             this.stacks.add(itemStack);
+        }
     }
 
     public boolean containsStack(ItemStack itemStack) {

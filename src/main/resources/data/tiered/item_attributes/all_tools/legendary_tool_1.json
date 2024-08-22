@@ -2,16 +2,16 @@
     "id": "tiered:legendary_tool_1",
     "verifiers": [
         {
-            "tag": "c:axes"
+            "tag": "minecraft:axes"
         },
         {
-            "tag": "c:pickaxes"
+            "tag": "minecraft:pickaxes"
         },
         {
-            "tag": "c:shovels"
+            "tag": "minecraft:shovels"
         },
         {
-            "tag": "c:hoes"
+            "tag": "minecraft:hoes"
         }
     ],
     "weight": 3,
@@ -23,7 +23,7 @@
             "type": "tiered:generic.durable",
             "modifier": {
                 "name": "tiered:legendary_tool_1",
-                "operation": "MULTIPLY_TOTAL",
+                "operation": "ADD_MULTIPLIED_TOTAL",
                 "amount": 0.3
             },
             "optional_equipment_slots": [
@@ -34,7 +34,7 @@
             "type": "generic.movement_speed",
             "modifier": {
                 "name": "tiered:legendary_tool_1",
-                "operation": "MULTIPLY_TOTAL",
+                "operation": "ADD_MULTIPLIED_TOTAL",
                 "amount": 0.05
             },
             "optional_equipment_slots": [
@@ -42,10 +42,10 @@
             ]
         },
         {
-            "type": "reach-entity-attributes:reach",
+            "type": "player.block_interaction_range",
             "modifier": {
                 "name": "tiered:legendary_tool_1",
-                "operation": "ADDITION",
+                "operation": "ADD_VALUE",
                 "amount": 2
             },
             "optional_equipment_slots": [

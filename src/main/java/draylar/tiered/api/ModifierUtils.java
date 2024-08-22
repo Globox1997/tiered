@@ -6,15 +6,14 @@ import net.levelz.access.PlayerStatsManagerAccess;
 import net.levelz.stats.Skill;
 import net.libz.util.SortList;
 import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
-import net.minecraft.nbt.NbtCompound;
 import net.minecraft.registry.Registries;
 import net.minecraft.util.Identifier;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Random;
 
@@ -38,7 +37,7 @@ public class ModifierUtils {
 
         Tiered.ATTRIBUTE_DATA_LOADER.getItemAttributes().forEach((id, attribute) -> {
             if (attribute.isValid(Registries.ITEM.getId(item)) && (attribute.getWeight() > 0 || reforge)) {
-                potentialAttributes.add(new Identifier(attribute.getID()));
+                potentialAttributes.add(Identifier.of(attribute.getID()));
                 attributeWeights.add(reforge ? attribute.getWeight() + 1 : attribute.getWeight());
             }
         });
@@ -96,93 +95,84 @@ public class ModifierUtils {
     }
 
     public static void setItemStackAttribute(@Nullable PlayerEntity playerEntity, ItemStack stack, boolean reforge) {
-        if (stack.getSubNbt(Tiered.NBT_SUBTAG_KEY) == null && !stack.isIn(TieredItemTags.MODIFIER_RESTRICTED)) {
-
+        if (stack.get(Tiered.TIER) == null && !stack.isIn(TieredItemTags.MODIFIER_RESTRICTED)) {
             // attempt to get a random tier
             Identifier potentialAttributeID = ModifierUtils.getRandomAttributeIDFor(playerEntity, stack.getItem(), reforge);
             // found an ID
             if (potentialAttributeID != null) {
-                stack.getOrCreateSubNbt(Tiered.NBT_SUBTAG_KEY).putString(Tiered.NBT_SUBTAG_DATA_KEY, potentialAttributeID.toString());
-
-                HashMap<String, Object> nbtMap = Tiered.ATTRIBUTE_DATA_LOADER.getItemAttributes().get(new Identifier(potentialAttributeID.toString())).getNbtValues();
 
                 // add durability nbt
-                List<AttributeTemplate> attributeList = Tiered.ATTRIBUTE_DATA_LOADER.getItemAttributes().get(new Identifier(potentialAttributeID.toString())).getAttributes();
-                for (int i = 0; i < attributeList.size(); i++) {
-                    if (attributeList.get(i).getAttributeTypeID().equals("tiered:generic.durable")) {
-                        if (nbtMap == null) {
-                            nbtMap = new HashMap<String, Object>();
-                        }
-                        nbtMap.put("durable", (double) Math.round(attributeList.get(i).getEntityAttributeModifier().getValue() * 100.0) / 100.0);
+                float durableFactor = -1f;
+                int operation = 0;
+                List<AttributeTemplate> attributeList = Tiered.ATTRIBUTE_DATA_LOADER.getItemAttributes().get(Identifier.of(potentialAttributeID.toString())).getAttributes();
+                for (AttributeTemplate attributeTemplate : attributeList) {
+                    if (attributeTemplate.getAttributeTypeID().equals("tiered:generic.durable")) {
+                        durableFactor = (float) Math.round(attributeTemplate.getEntityAttributeModifier().value() * 100.0f) / 100.0f;
+                        operation = attributeTemplate.getEntityAttributeModifier().operation().getId();
                         break;
                     }
                 }
-
-                // add nbtMap
-                if (nbtMap != null) {
-                    NbtCompound nbtCompound = stack.getNbt();
-                    for (HashMap.Entry<String, Object> entry : nbtMap.entrySet()) {
-                        String key = entry.getKey();
-                        Object value = entry.getValue();
-
-                        // json list will get read as ArrayList class
-                        // json map will get read as linkedtreemap
-                        // json integer is read by gson -> always double
-                        if (value instanceof String) {
-                            nbtCompound.putString(key, (String) value);
-                        } else if (value instanceof Boolean) {
-                            nbtCompound.putBoolean(key, (boolean) value);
-                        } else if (value instanceof Double) {
-                            if ((double) Math.abs((double) value) % 1.0 < 0.0001D) {
-                                nbtCompound.putInt(key, (int) Math.round((double) value));
-                            } else {
-                                nbtCompound.putDouble(key, Math.round((double) value * 100.0) / 100.0);
-                            }
-                        }
-                    }
-                    stack.setNbt(nbtCompound);
-                }
+                stack.set(Tiered.TIER, new TierComponent(potentialAttributeID.toString(), durableFactor, operation));
             }
         }
     }
 
     public static void removeItemStackAttribute(ItemStack itemStack) {
-        if (itemStack.hasNbt() && itemStack.getSubNbt(Tiered.NBT_SUBTAG_KEY) != null) {
-
-            Identifier tier = new Identifier(itemStack.getOrCreateSubNbt(Tiered.NBT_SUBTAG_KEY).getString(Tiered.NBT_SUBTAG_DATA_KEY));
-            if (Tiered.ATTRIBUTE_DATA_LOADER.getItemAttributes().get(tier) != null) {
-                HashMap<String, Object> nbtMap = Tiered.ATTRIBUTE_DATA_LOADER.getItemAttributes().get(tier).getNbtValues();
-                List<String> nbtKeys = new ArrayList<String>();
-                if (nbtMap != null) {
-                    nbtKeys.addAll(nbtMap.keySet().stream().toList());
-                }
-
-                List<AttributeTemplate> attributeList = Tiered.ATTRIBUTE_DATA_LOADER.getItemAttributes().get(tier).getAttributes();
-                for (int i = 0; i < attributeList.size(); i++) {
-                    if (attributeList.get(i).getAttributeTypeID().equals("tiered:generic.durable")) {
-                        nbtKeys.add("durable");
-                        break;
-                    }
-                }
-
-                if (!nbtKeys.isEmpty()) {
-                    for (int i = 0; i < nbtKeys.size(); i++) {
-                        if (!nbtKeys.get(i).equals("Damage")) {
-                            itemStack.getNbt().remove(nbtKeys.get(i));
-                        }
-                    }
-                }
-            }
-            itemStack.removeSubNbt(Tiered.NBT_SUBTAG_KEY);
+        if (itemStack.get(Tiered.TIER) != null) {
+            itemStack.remove(Tiered.TIER);
         }
     }
 
     @Nullable
-    public static Identifier getAttributeID(ItemStack itemStack) {
-        if (itemStack.getSubNbt(Tiered.NBT_SUBTAG_KEY) != null) {
-            return new Identifier(itemStack.getSubNbt(Tiered.NBT_SUBTAG_KEY).getString(Tiered.NBT_SUBTAG_DATA_KEY));
+    public static Identifier getAttributeId(ItemStack itemStack) {
+        if (itemStack.get(Tiered.TIER) != null) {
+            return Identifier.of(itemStack.get(Tiered.TIER).tier());
         }
         return null;
+    }
+
+    public static void updateItemStackComponent(PlayerInventory playerInventory) {
+        for (int u = 0; u < playerInventory.size(); u++) {
+            ItemStack itemStack = playerInventory.getStack(u);
+            if (!itemStack.isEmpty() && itemStack.get(Tiered.TIER) != null) {
+
+                // Check if attribute exists
+                List<String> attributeIds = new ArrayList<>();
+                Tiered.ATTRIBUTE_DATA_LOADER.getItemAttributes().forEach((id, attribute) -> {
+                    if (attribute.isValid(Registries.ITEM.getId(itemStack.getItem()))) {
+                        attributeIds.add(attribute.getID());
+                    }
+                });
+                Identifier attributeID = null;
+                for (int i = 0; i < attributeIds.size(); i++) {
+                    if (itemStack.get(Tiered.TIER).tier().contains(attributeIds.get(i))) {
+                        attributeID = Identifier.of(attributeIds.get(i));
+                        break;
+                    } else if (i == attributeIds.size() - 1) {
+                        ModifierUtils.removeItemStackAttribute(itemStack);
+                        attributeID = ModifierUtils.getRandomAttributeIDFor(null, itemStack.getItem(), false);
+                    }
+                }
+
+                // found an ID
+                if (attributeID != null) {
+                    // update durability nbt
+                    float durableFactor = -1f;
+                    int operation = 0;
+                    List<AttributeTemplate> attributeList = Tiered.ATTRIBUTE_DATA_LOADER.getItemAttributes().get(Identifier.of(attributeID.toString())).getAttributes();
+                    for (int i = 0; i < attributeList.size(); i++) {
+                        if (attributeList.get(i).getAttributeTypeID().equals("tiered:generic.durable")) {
+                            durableFactor = (float) Math.round(attributeList.get(i).getEntityAttributeModifier().value() * 100.0f) / 100.0f;
+                            operation = attributeList.get(i).getEntityAttributeModifier().operation().getId();
+                            break;
+                        }
+                    }
+
+                    itemStack.set(Tiered.TIER, new TierComponent(attributeID.toString(), durableFactor, operation));
+                    playerInventory.setStack(u, itemStack);
+                }
+            }
+        }
     }
 
 }

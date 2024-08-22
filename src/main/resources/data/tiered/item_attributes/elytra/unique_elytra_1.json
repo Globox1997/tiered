@@ -14,7 +14,7 @@
             "type": "generic.max_health",
             "modifier": {
                 "name": "tiered:unique_elytra_1",
-                "operation": "ADDITION",
+                "operation": "ADD_VALUE",
                 "amount": 6
             },
             "optional_equipment_slots": [
@@ -25,7 +25,7 @@
             "type": "generic.movement_speed",
             "modifier": {
                 "name": "tiered:unique_elytra_1",
-                "operation": "MULTIPLY_TOTAL",
+                "operation": "ADD_MULTIPLIED_TOTAL",
                 "amount": 0.1
             },
             "optional_equipment_slots": [

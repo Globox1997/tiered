@@ -2,10 +2,10 @@
     "id": "tiered:epic_ranged_3",
     "verifiers": [
         {
-            "tag": "c:bows"
+            "tag": "minecraft:enchantable/bow"
         },
         {
-            "tag": "c:crossbows"
+            "tag": "minecraft:enchantable/crossbow"
         }
     ],
     "weight": 8,
@@ -17,7 +17,7 @@
             "type": "tiered:generic.crit_chance",
             "modifier": {
                 "name": "tiered:epic_ranged_3",
-                "operation": "MULTIPLY_TOTAL",
+                "operation": "ADD_MULTIPLIED_TOTAL",
                 "amount": 0.1
             },
             "optional_equipment_slots": [
@@ -29,7 +29,7 @@
             "type": "tiered:generic.durable",
             "modifier": {
                 "name": "tiered:epic_ranged_3",
-                "operation": "MULTIPLY_TOTAL",
+                "operation": "ADD_MULTIPLIED_TOTAL",
                 "amount": 0.1
             },
             "optional_equipment_slots": [
@@ -41,7 +41,7 @@
             "type": "generic.movement_speed",
             "modifier": {
                 "name": "tiered:epic_ranged_3",
-                "operation": "MULTIPLY_TOTAL",
+                "operation": "ADD_MULTIPLIED_TOTAL",
                 "amount": 0.05
             },
             "optional_equipment_slots": [

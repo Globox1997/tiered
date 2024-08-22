@@ -86,8 +86,8 @@ public class ReforgeScreenHandler extends ScreenHandler {
                     this.reforgeReady = items.stream().anyMatch(it -> it == baseItem.getItem());
                 } else if (item instanceof ToolItem toolItem) {
                     this.reforgeReady = toolItem.getMaterial().getRepairIngredient().test(baseItem);
-                } else if (item instanceof ArmorItem armorItem && armorItem.getMaterial().getRepairIngredient() != null) {
-                    this.reforgeReady = armorItem.getMaterial().getRepairIngredient().test(baseItem);
+                } else if (item instanceof ArmorItem armorItem && armorItem.getMaterial().value().repairIngredient() != null) {
+                    this.reforgeReady = armorItem.getMaterial().value().repairIngredient().get().test(baseItem);
                 } else {
                     this.reforgeReady = baseItem.isIn(TieredItemTags.REFORGE_BASE_ITEM);
                 }
@@ -97,7 +97,7 @@ public class ReforgeScreenHandler extends ScreenHandler {
         } else {
             this.reforgeReady = false;
         }
-        if (this.reforgeReady && !ConfigInit.CONFIG.uniqueReforge && ModifierUtils.getAttributeID(stack) != null && ModifierUtils.getAttributeID(stack).getPath().contains("unique")) {
+        if (this.reforgeReady && !ConfigInit.CONFIG.uniqueReforge && ModifierUtils.getAttributeId(stack) != null && ModifierUtils.getAttributeId(stack).getPath().contains("unique")) {
             this.reforgeReady = false;
         }
         TieredServerPacket.writeS2CReforgeReadyPacket((ServerPlayerEntity) player, !this.reforgeReady);
@@ -141,7 +141,7 @@ public class ReforgeScreenHandler extends ScreenHandler {
                     if (item instanceof ToolItem toolItem && toolItem.getMaterial().getRepairIngredient().test(itemStack) && !this.insertItem(itemStack2, 0, 1, false)) {
                         return ItemStack.EMPTY;
                     }
-                    if (item instanceof ArmorItem armorItem && armorItem.getMaterial().getRepairIngredient() != null && armorItem.getMaterial().getRepairIngredient().test(itemStack)
+                    if (item instanceof ArmorItem armorItem && armorItem.getMaterial().value().repairIngredient() != null && armorItem.getMaterial().value().repairIngredient().get().test(itemStack)
                             && !this.insertItem(itemStack2, 0, 1, false)) {
                         return ItemStack.EMPTY;
                     }

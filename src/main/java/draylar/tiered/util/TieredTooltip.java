@@ -18,9 +18,6 @@ public class TieredTooltip {
 
     public static void renderTieredTooltipFromComponents(DrawContext context, TextRenderer textRenderer, List<TooltipComponent> components, int x, int y, TooltipPositioner positioner,
             BorderTemplate borderTemplate) {
-        TooltipComponent tooltipComponent2;
-        int r;
-        int k;
         if (components.isEmpty()) {
             return;
         }
@@ -30,7 +27,7 @@ public class TieredTooltip {
             if (tooltipComponent == null) {
                 continue;
             }
-            k = tooltipComponent.getWidth(textRenderer);
+            int k = tooltipComponent.getWidth(textRenderer);
             if (k > i) {
                 i = k;
             }
@@ -58,13 +55,14 @@ public class TieredTooltip {
         renderTooltipBackground(context, n, o, l, m, 400, backgroundColor, colorStart, colorEnd);
         context.getMatrices().translate(0.0f, 0.0f, 400.0f);
         int q = o;
-
+        int r;
+        TooltipComponent tooltipComponent2;
         for (r = 0; r < components.size(); ++r) {
             int nameCentering = 0;
             tooltipComponent2 = components.get(r);
-            if (r == 0 && ConfigInit.CONFIG.centerName)
+            if (r == 0 && ConfigInit.CONFIG.centerName) {
                 nameCentering = i / 2 - tooltipComponent2.getWidth(textRenderer) / 2;
-
+            }
             tooltipComponent2.drawText(textRenderer, n + nameCentering, q, context.getMatrices().peek().getPositionMatrix(), context.getVertexConsumers());
             q += tooltipComponent2.getHeight() + (r == 0 ? 2 : 0);
         }

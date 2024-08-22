@@ -2,7 +2,7 @@
     "id": "tiered:unique_melee_2",
     "verifiers": [
         {
-            "tag": "c:swords"
+            "tag": "minecraft:swords"
         }
     ],
     "weight": 0,
@@ -14,7 +14,7 @@
             "type": "generic.attack_damage",
             "modifier": {
                 "name": "tiered:unique_melee_2",
-                "operation": "MULTIPLY_TOTAL",
+                "operation": "ADD_MULTIPLIED_TOTAL",
                 "amount": 0.3
             },
             "optional_equipment_slots": [
@@ -25,7 +25,7 @@
             "type": "tiered:generic.crit_chance",
             "modifier": {
                 "name": "tiered:unique_melee_2",
-                "operation": "MULTIPLY_TOTAL",
+                "operation": "ADD_MULTIPLIED_TOTAL",
                 "amount": 0.2
             },
             "optional_equipment_slots": [
@@ -36,7 +36,7 @@
             "type": "tiered:generic.durable",
             "modifier": {
                 "name": "tiered:unique_melee_2",
-                "operation": "MULTIPLY_TOTAL",
+                "operation": "ADD_MULTIPLIED_TOTAL",
                 "amount": 0.5
             },
             "optional_equipment_slots": [

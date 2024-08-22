@@ -1,8 +1,8 @@
 {
-  "generic.dig_speed": "Dig Speed",
-  "generic.crit_chance": "Crit Chance",
-  "generic.durable": "Durability",
-  "generic.range_attack_damage": "Range Attack Damage",
+  "attribute.name.generic.dig_speed": "Dig Speed",
+  "attribute.name.generic.crit_chance": "Crit Chance",
+  "attribute.name.generic.durable": "Durability",
+  "attribute.name.generic.range_attack_damage": "Range Attack Damage",
 
   "tiered:common_armor_1.label": "Common",
   "tiered:common_armor_2.label": "Common",

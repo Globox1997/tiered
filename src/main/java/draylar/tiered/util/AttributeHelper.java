@@ -12,7 +12,7 @@ public class AttributeHelper {
         if (instance != null) {
             float critChance = 0.0f;
             for (EntityAttributeModifier modifier : instance.getModifiers()) {
-                float amount = (float) modifier.getValue();
+                float amount = (float) modifier.value();
                 critChance += amount;
             }
             return playerEntity.getRandom().nextDouble() < critChance;
@@ -25,9 +25,9 @@ public class AttributeHelper {
         if (instance != null) {
             float extraDigSpeed = oldDigSpeed;
             for (EntityAttributeModifier modifier : instance.getModifiers()) {
-                float amount = (float) modifier.getValue();
+                float amount = (float) modifier.value();
 
-                if (modifier.getOperation() == EntityAttributeModifier.Operation.ADDITION) {
+                if (modifier.operation() == EntityAttributeModifier.Operation.ADD_VALUE) {
                     extraDigSpeed += amount;
                 } else {
                     extraDigSpeed *= (amount + 1);
@@ -44,9 +44,9 @@ public class AttributeHelper {
         if (instance != null) {
             float rangeDamage = oldDamage;
             for (EntityAttributeModifier modifier : instance.getModifiers()) {
-                float amount = (float) modifier.getValue();
+                float amount = (float) modifier.value();
 
-                if (modifier.getOperation() == EntityAttributeModifier.Operation.ADDITION) {
+                if (modifier.operation() == EntityAttributeModifier.Operation.ADD_VALUE) {
                     rangeDamage += amount;
                 } else {
                     rangeDamage *= (amount + 1.0f);
@@ -62,7 +62,7 @@ public class AttributeHelper {
         if (instance != null) {
             float customChance = 0.0f;
             for (EntityAttributeModifier modifier : instance.getModifiers()) {
-                customChance += (float) modifier.getValue();
+                customChance += (float) modifier.value();
             }
             if (playerEntity.getWorld().getRandom().nextFloat() > (1.0f - Math.abs(customChance))) {
                 float extraCrit = oldDamage;

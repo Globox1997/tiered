@@ -13,9 +13,9 @@ public class EntityAttributeModifierSerializer implements JsonSerializer<EntityA
     @Override
     public JsonElement serialize(EntityAttributeModifier src, Type typeOfSrc, JsonSerializationContext context) {
         JsonObject obj = new JsonObject();
-        obj.addProperty("amount", src.getValue());
-        obj.addProperty("operation", src.getOperation().toString());
-        obj.addProperty("name", src.getName());
+        obj.addProperty("amount", src.value());
+        obj.addProperty("operation", src.operation().toString());
+        obj.addProperty("name", src.id().toString());
         return obj;
     }
 }

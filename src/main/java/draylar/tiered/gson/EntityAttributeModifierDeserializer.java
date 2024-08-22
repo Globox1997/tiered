@@ -2,6 +2,7 @@ package draylar.tiered.gson;
 
 import com.google.gson.*;
 import net.minecraft.entity.attribute.EntityAttributeModifier;
+import net.minecraft.util.Identifier;
 
 import java.lang.reflect.Type;
 
@@ -19,17 +20,17 @@ public class EntityAttributeModifierDeserializer implements JsonDeserializer<Ent
         JsonElement amount = getJsonElement(jsonObject, JSON_AMOUNT_KEY, "Entity Attribute Modifier requires an amount!");
         JsonElement operation = getJsonElement(jsonObject, JSON_OPERATION_KEY, "Entity Attribute Modifier requires an operation!");
 
-        return new EntityAttributeModifier(name.getAsString(), amount.getAsFloat(), EntityAttributeModifier.Operation.valueOf(operation.getAsString().toUpperCase()));
+        return new EntityAttributeModifier(Identifier.of(name.getAsString()), amount.getAsFloat(), EntityAttributeModifier.Operation.valueOf(operation.getAsString().toUpperCase()));
     }
 
     private JsonElement getJsonElement(JsonObject jsonObject, String jsonNameKey, String s) {
         JsonElement name;
 
-        if (jsonObject.has(jsonNameKey))
+        if (jsonObject.has(jsonNameKey)) {
             name = jsonObject.get(jsonNameKey);
-        else
+        } else {
             throw new JsonParseException(s);
-
+        }
         return name;
     }
 }

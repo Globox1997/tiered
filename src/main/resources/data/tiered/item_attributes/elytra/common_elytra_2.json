@@ -14,7 +14,7 @@
       "type": "tiered:generic.durable",
       "modifier": {
         "name": "tiered:common_elytra_2",
-        "operation": "MULTIPLY_TOTAL",
+        "operation": "ADD_MULTIPLIED_TOTAL",
         "amount": -0.3
       },
       "optional_equipment_slots": [
@@ -25,7 +25,7 @@
       "type": "generic.movement_speed",
       "modifier": {
         "name": "tiered:common_elytra_2",
-        "operation": "MULTIPLY_TOTAL",
+        "operation": "ADD_MULTIPLIED_TOTAL",
         "amount": -0.2
       },
       "optional_equipment_slots": [

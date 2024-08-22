@@ -11,6 +11,7 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
+import draylar.tiered.Tiered;
 import draylar.tiered.TieredClient;
 import draylar.tiered.config.ConfigInit;
 import draylar.tiered.util.TieredTooltip;
@@ -36,9 +37,8 @@ public class DrawContextMixin {
 
     @Inject(method = "drawItemTooltip", at = @At("HEAD"), cancellable = true)
     private void drawItemTooltipMixin(TextRenderer textRenderer, ItemStack stack, int x, int y, CallbackInfo info) {
-
-        if (ConfigInit.CONFIG.tieredTooltip && stack.hasNbt() && stack.getNbt().contains("Tiered")) {
-            String nbtString = stack.getNbt().getCompound("Tiered").asString();
+        if (ConfigInit.CONFIG.tieredTooltip && stack.get(Tiered.TIER) != null) {
+            String nbtString = stack.get(Tiered.TIER).tier();
             for (int i = 0; i < TieredClient.BORDER_TEMPLATES.size(); i++) {
                 if (!TieredClient.BORDER_TEMPLATES.get(i).containsStack(stack) && TieredClient.BORDER_TEMPLATES.get(i).containsDecider(nbtString)) {
                     TieredClient.BORDER_TEMPLATES.get(i).addStack(stack);
