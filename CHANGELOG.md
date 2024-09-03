@@ -1,6 +1,6 @@
 ### Added:
 - 
 ### Fixed:
-- 
+- Fixed shield tier
 ### Changed:
-- Updated to mc 1.21
+- 

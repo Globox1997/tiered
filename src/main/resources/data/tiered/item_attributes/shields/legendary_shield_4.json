@@ -2,7 +2,7 @@
     "id": "tiered:legendary_shield_4",
     "verifiers": [
         {
-            "tag": "c:shields"
+            "tag": "c:tools/shields"
         }
     ],
     "weight": 3,

@@ -2,7 +2,7 @@
     "id": "tiered:rare_shield_1",
     "verifiers": [
         {
-            "tag": "c:shields"
+            "tag": "c:tools/shields"
         }
     ],
     "weight": 15,

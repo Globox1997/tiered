@@ -2,7 +2,7 @@
     "id": "tiered:common_shield_2",
     "verifiers": [
         {
-            "tag": "c:shields"
+            "tag": "c:tools/shields"
         }
     ],
     "weight": 50,
