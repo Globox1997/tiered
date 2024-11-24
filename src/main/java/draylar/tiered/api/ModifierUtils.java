@@ -2,8 +2,9 @@ package draylar.tiered.api;
 
 import draylar.tiered.Tiered;
 import draylar.tiered.config.ConfigInit;
-import net.levelz.access.PlayerStatsManagerAccess;
-import net.levelz.stats.Skill;
+import net.levelz.access.LevelManagerAccess;
+import net.levelz.level.LevelManager;
+import net.levelz.level.Skill;
 import net.libz.util.SortList;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.player.PlayerInventory;
@@ -56,13 +57,20 @@ public class ModifierUtils {
         }
         // LevelZ
         if (Tiered.isLevelZLoaded && playerEntity != null) {
-            int newMaxWeight = Collections.max(attributeWeights);
-            for (int i = 0; i < attributeWeights.size(); i++) {
-                if (attributeWeights.get(i) > newMaxWeight / 3) {
-                    attributeWeights.set(i, (int) (attributeWeights.get(i)
-                            * (1.0f - ConfigInit.CONFIG.levelzReforgeModifier * ((PlayerStatsManagerAccess) playerEntity).getPlayerStatsManager().getSkillLevel(Skill.SMITHING))));
+            LevelManager.SKILLS.values().stream().filter(skill -> skill.getKey().equals("smithing"));
+            for (Skill skill : LevelManager.SKILLS.values()) {
+                if (skill.getKey().equals("smithing")) {
+                    int newMaxWeight = Collections.max(attributeWeights);
+                    for (int i = 0; i < attributeWeights.size(); i++) {
+                        if (attributeWeights.get(i) > newMaxWeight / 3) {
+                            attributeWeights.set(i, (int) (attributeWeights.get(i)
+                                    * (1.0f - ConfigInit.CONFIG.levelzReforgeModifier * ((LevelManagerAccess) playerEntity).getLevelManager().getSkillLevel(skill.getId()))));
+                        }
+                    }
+                    break;
                 }
             }
+
         }
         // Luck
         if (playerEntity != null) {
