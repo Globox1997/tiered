@@ -1,7 +1,6 @@
 ### Added:
 - 
 ### Fixed:
-- Fixed shield tier
-- Fixed mainhand tier tooltip
+- Fixed levelz compat
 ### Changed:
 - 
