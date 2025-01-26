@@ -1,8 +1,5 @@
 package draylar.tiered.api;
 
-import java.util.Optional;
-import java.util.function.BiConsumer;
-
 import com.google.common.collect.Multimap;
 import com.google.gson.annotations.SerializedName;
 import net.minecraft.component.type.AttributeModifierSlot;
@@ -13,6 +10,9 @@ import net.minecraft.entity.attribute.EntityAttributeModifier;
 import net.minecraft.registry.Registries;
 import net.minecraft.registry.entry.RegistryEntry;
 import net.minecraft.util.Identifier;
+
+import java.util.Optional;
+import java.util.function.BiConsumer;
 
 /**
  * Stores information on an AttributeModifier template applied to an ItemStack.
@@ -72,7 +72,7 @@ public class AttributeTemplate {
         Optional<RegistryEntry.Reference<EntityAttribute>> optional = Registries.ATTRIBUTE.getEntry(Identifier.of(this.attributeTypeID));
 
         if (optional.isPresent()) {
-            EntityAttributeModifier cloneModifier = new EntityAttributeModifier(entityAttributeModifier.id(), entityAttributeModifier.value(), entityAttributeModifier.operation());
+            EntityAttributeModifier cloneModifier = new EntityAttributeModifier(Identifier.of(entityAttributeModifier.id().toString() + "_" + slot.getName()), entityAttributeModifier.value(), entityAttributeModifier.operation());
 
             AttributeModifiersComponent.Entry entry = new AttributeModifiersComponent.Entry(optional.get(), cloneModifier, AttributeModifierSlot.forEquipmentSlot(slot));
             if (entry.slot().matches(slot)) {

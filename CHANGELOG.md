@@ -1,6 +1,6 @@
 ### Added:
 - 
 ### Fixed:
-- Fixed levelz compat
+- Fixed multi attributes
 ### Changed:
 - 
