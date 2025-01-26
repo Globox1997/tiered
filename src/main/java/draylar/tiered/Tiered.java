@@ -69,6 +69,7 @@ public class Tiered implements ModInitializer {
         ServerPlayConnectionEvents.JOIN.register((network, packetSender, minecraftServer) -> {
             TieredServerPacket.writeS2CReforgeItemSyncPacket(network.getPlayer());
             TieredServerPacket.writeS2CAttributePacket(network.getPlayer());
+            TieredServerPacket.writeS2CHealthPacket(network.getPlayer());
         });
 
         ServerLifecycleEvents.END_DATA_PACK_RELOAD.register((server, serverResourceManager, success) -> {

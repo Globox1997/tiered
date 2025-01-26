@@ -1,6 +1,5 @@
 package draylar.tiered.mixin;
 
-import draylar.tiered.Tiered;
 import draylar.tiered.mixin.access.ServerPlayerEntityAccessor;
 import draylar.tiered.network.TieredServerPacket;
 import net.minecraft.entity.Entity;
@@ -16,15 +15,12 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Mutable;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
-import org.spongepowered.asm.mixin.injection.At.Shift;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.Redirect;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
-import org.spongepowered.asm.mixin.injection.callback.LocalCapture;
 
 import java.util.Map;
 
-@SuppressWarnings("rawtypes")
 @Mixin(LivingEntity.class)
 public abstract class LivingEntityMixin extends Entity {
 
@@ -45,13 +41,12 @@ public abstract class LivingEntityMixin extends Entity {
         this.dataTracker.set(HEALTH, health);
     }
 
-    @Inject(method = "getEquipmentChanges", at = @At(value = "INVOKE", target = "Lnet/minecraft/item/ItemStack;applyAttributeModifiers(Lnet/minecraft/entity/EquipmentSlot;Ljava/util/function/BiConsumer;)V", shift = Shift.AFTER, ordinal = 0), locals = LocalCapture.CAPTURE_FAILSOFT)
-    private void getEquipmentChangesMixin(CallbackInfoReturnable<Map<EquipmentSlot, ItemStack>> info, Map map, EquipmentSlot var2[], int var3, int var4, EquipmentSlot equipmentSlot, ItemStack itemStack, ItemStack itemStack2) {
-        if (itemStack.get(Tiered.TIER) != null && (Object) this instanceof ServerPlayerEntity serverPlayerEntity) {
+    @Inject(method = "getEquipmentChanges", at = @At(value = "TAIL"))
+    private void getEquipmentChangesMixin(CallbackInfoReturnable<Map<EquipmentSlot, ItemStack>> cir) {
+        if ((Object) this instanceof ServerPlayerEntity serverPlayerEntity) {
             this.setHealth(this.getHealth() > this.getMaxHealth() ? this.getMaxHealth() : this.getHealth());
             TieredServerPacket.writeS2CHealthPacket(serverPlayerEntity);
-            ((ServerPlayerEntityAccessor)serverPlayerEntity).setSyncedHealth(serverPlayerEntity.getHealth());
-
+            ((ServerPlayerEntityAccessor) serverPlayerEntity).setSyncedHealth(serverPlayerEntity.getHealth());
         }
     }
 
