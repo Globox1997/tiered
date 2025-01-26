@@ -1,11 +1,11 @@
 package draylar.tiered.mixin;
 
 import draylar.tiered.Tiered;
+import draylar.tiered.api.AttributeTemplate;
 import draylar.tiered.api.ModifierUtils;
 import draylar.tiered.api.PotentialAttribute;
 import net.minecraft.component.type.AttributeModifierSlot;
 import net.minecraft.entity.EquipmentSlot;
-import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.attribute.EntityAttribute;
 import net.minecraft.entity.attribute.EntityAttributeModifier;
 import net.minecraft.item.ItemStack;
@@ -57,8 +57,7 @@ public abstract class ItemStackMixin {
             Identifier tier = ModifierUtils.getAttributeId(itemStack);
             PotentialAttribute potentialAttribute = Tiered.ATTRIBUTE_DATA_LOADER.getItemAttributes().get(tier);
             if (potentialAttribute != null) {
-                potentialAttribute.getAttributes().forEach(template -> {
-
+                for (AttributeTemplate template : potentialAttribute.getAttributes()) {
                     // get required equipment slots
                     if (template.getRequiredEquipmentSlots() != null) {
                         List<EquipmentSlot> requiredEquipmentSlots = new ArrayList<>(Arrays.asList(template.getRequiredEquipmentSlots()));
@@ -85,7 +84,7 @@ public abstract class ItemStackMixin {
                             }
                         }
                     }
-                });
+                }
             }
         }
     }
