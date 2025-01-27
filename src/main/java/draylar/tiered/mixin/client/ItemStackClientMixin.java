@@ -43,17 +43,42 @@ import java.util.function.Consumer;
 @Environment(EnvType.CLIENT)
 @Mixin(ItemStack.class)
 public abstract class ItemStackClientMixin {
-    //
-    @Unique
-    private boolean isTiered = false;
-    //    @Unique
-//    private String translationKey;
+//    //
 //    @Unique
-//    private String armorModifierFormat;
+//    private boolean isTiered = false;
+//    //    @Unique
+////    private String translationKey;
+////    @Unique
+////    private String armorModifierFormat;
+//    @Unique
+//    private Map<String, ArrayList<Object>> tieredMap = new HashMap<>();
+//    @Unique
+//    private List<String> existingModifiers = new ArrayList<>();
+
     @Unique
-    private Map<String, ArrayList<Object>> tieredMap = new HashMap<>();
-    @Unique
-    private List<String> existingModifiers = new ArrayList<>();
+    private boolean slotInfo;
+
+    // Three methods to remove multiple "When Worn",...
+    @Inject(method = "appendAttributeModifiersTooltip", at = @At("HEAD"))
+    private void appendAttributeModifiersTooltipMixin(Consumer<Text> textConsumer, @Nullable PlayerEntity player, CallbackInfo info) {
+        this.slotInfo = true;
+    }
+
+    @Inject(method = "appendAttributeModifiersTooltip", at = @At(value = "INVOKE", target = "Lnet/minecraft/item/ItemStack;applyAttributeModifier(Lnet/minecraft/component/type/AttributeModifierSlot;Ljava/util/function/BiConsumer;)V"), cancellable = true)
+    private void appendAttributeModifiersTooltipMixinT(Consumer<Text> textConsumer, @Nullable PlayerEntity player, CallbackInfo info) {
+        ItemStack itemStack = (ItemStack) (Object) this;
+        if (itemStack.get(Tiered.TIER) != null && !this.slotInfo) {
+            info.cancel();
+        }
+    }
+
+    @Inject(method = "method_57370", at = @At(value = "INVOKE", target = "Ljava/util/function/Consumer;accept(Ljava/lang/Object;)V", ordinal = 0))
+    private void appendAttributeModifiersTooltipMixin(MutableBoolean mutableBoolean, Consumer<Text> consumer, AttributeModifierSlot attributeModifierSlot, PlayerEntity playerEntity, RegistryEntry<EntityAttribute> attribute, EntityAttributeModifier modifier, CallbackInfo info) {
+        ItemStack itemStack = (ItemStack) (Object) this;
+        if (itemStack.get(Tiered.TIER) != null) {
+            this.slotInfo = false;
+        }
+    }
 
 //    private List<Object> list = new ArrayList<>();
 //    @Unique
@@ -386,9 +411,9 @@ public abstract class ItemStackClientMixin {
     //     return null;
     // }
 
-    @Shadow
-    abstract void appendAttributeModifierTooltip(Consumer<Text> textConsumer, @Nullable PlayerEntity player, RegistryEntry<EntityAttribute> attribute, EntityAttributeModifier modifier);
-
-    @Shadow
-    public abstract void applyAttributeModifier(AttributeModifierSlot slot, BiConsumer<RegistryEntry<EntityAttribute>, EntityAttributeModifier> attributeModifierConsumer);
+//    @Shadow
+//    abstract void appendAttributeModifierTooltip(Consumer<Text> textConsumer, @Nullable PlayerEntity player, RegistryEntry<EntityAttribute> attribute, EntityAttributeModifier modifier);
+//
+//    @Shadow
+//    public abstract void applyAttributeModifier(AttributeModifierSlot slot, BiConsumer<RegistryEntry<EntityAttribute>, EntityAttributeModifier> attributeModifierConsumer);
 }

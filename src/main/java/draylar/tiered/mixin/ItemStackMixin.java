@@ -8,15 +8,11 @@ import net.minecraft.component.type.AttributeModifierSlot;
 import net.minecraft.entity.EquipmentSlot;
 import net.minecraft.entity.attribute.EntityAttribute;
 import net.minecraft.entity.attribute.EntityAttributeModifier;
-import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.registry.entry.RegistryEntry;
-import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
-import org.apache.commons.lang3.mutable.MutableBoolean;
 import org.jetbrains.annotations.Nullable;
 import org.spongepowered.asm.mixin.Mixin;
-import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
@@ -27,13 +23,9 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.BiConsumer;
-import java.util.function.Consumer;
 
 @Mixin(ItemStack.class)
 public abstract class ItemStackMixin {
-
-    @Unique
-    private boolean slotInfo;
 
     @Inject(method = "getMaxDamage", at = @At("TAIL"), cancellable = true)
     private void getMaxDamageMixin(CallbackInfoReturnable<Integer> info) {
@@ -47,7 +39,6 @@ public abstract class ItemStackMixin {
         }
     }
 
-
     // Used for tooltip
     @Inject(method = "Lnet/minecraft/item/ItemStack;applyAttributeModifier(Lnet/minecraft/component/type/AttributeModifierSlot;Ljava/util/function/BiConsumer;)V", at = @At(value = "INVOKE", target = "Lnet/minecraft/enchantment/EnchantmentHelper;applyAttributeModifiers(Lnet/minecraft/item/ItemStack;Lnet/minecraft/component/type/AttributeModifierSlot;Ljava/util/function/BiConsumer;)V"))
     private void applyAttributeModifierMixin(AttributeModifierSlot slot, BiConsumer<RegistryEntry<EntityAttribute>, EntityAttributeModifier> attributeModifierConsumer, CallbackInfo info) {
@@ -58,29 +49,6 @@ public abstract class ItemStackMixin {
     private void applyAttributeModifiersMixin(EquipmentSlot slot, BiConsumer<RegistryEntry<EntityAttribute>, EntityAttributeModifier> attributeModifierConsumer, CallbackInfo info) {
         applyAttributeModifier(slot, null, attributeModifierConsumer);
     }
-
-    // Three methods to remove multiple "When Worn",...
-    @Inject(method = "appendAttributeModifiersTooltip", at = @At("HEAD"))
-    private void appendAttributeModifiersTooltipMixin(Consumer<Text> textConsumer, @Nullable PlayerEntity player, CallbackInfo info) {
-        this.slotInfo = true;
-    }
-
-    @Inject(method = "appendAttributeModifiersTooltip", at = @At(value = "INVOKE", target = "Lnet/minecraft/item/ItemStack;applyAttributeModifier(Lnet/minecraft/component/type/AttributeModifierSlot;Ljava/util/function/BiConsumer;)V"), cancellable = true)
-    private void appendAttributeModifiersTooltipMixinT(Consumer<Text> textConsumer, @Nullable PlayerEntity player, CallbackInfo info) {
-        ItemStack itemStack = (ItemStack) (Object) this;
-        if (itemStack.get(Tiered.TIER) != null && !this.slotInfo) {
-            info.cancel();
-        }
-    }
-
-    @Inject(method = "method_57370", at = @At(value = "INVOKE", target = "Ljava/util/function/Consumer;accept(Ljava/lang/Object;)V", ordinal = 0))
-    private void appendAttributeModifiersTooltipMixin(MutableBoolean mutableBoolean, Consumer<Text> consumer, AttributeModifierSlot attributeModifierSlot, PlayerEntity playerEntity, RegistryEntry<EntityAttribute> attribute, EntityAttributeModifier modifier, CallbackInfo info) {
-        ItemStack itemStack = (ItemStack) (Object) this;
-        if (itemStack.get(Tiered.TIER) != null) {
-            this.slotInfo = false;
-        }
-    }
-
 
     private void applyAttributeModifier(@Nullable EquipmentSlot equipmentSlot, @Nullable AttributeModifierSlot attributeModifierSlot, BiConsumer<RegistryEntry<EntityAttribute>, EntityAttributeModifier> attributeModifierConsumer) {
         ItemStack itemStack = (ItemStack) (Object) this;
