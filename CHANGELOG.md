@@ -5,4 +5,4 @@
 - Fixed max health attribute
 - Fixed multiple "when worn"
 ### Changed:
-- 
+- Tweaked tiered tooltip

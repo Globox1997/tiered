@@ -245,17 +245,17 @@
 
   "skill.levelz.smithing.2": "Smithing increases reforging luck",
 
-  "tiered.attribute.modifier.plus.0": "%s %s %s",
-  "tiered.attribute.modifier.plus.1": "%s %s %s",
-  "tiered.attribute.modifier.plus.2": "%s %s %s",
+  "tiered.attribute.modifier": "%s",
 
-  "tiered.attribute.modifier.equals.0": "%s %s %s",
-  "tiered.attribute.modifier.equals.1": "%s %s %s",
-  "tiered.attribute.modifier.equals.2": "%s %s %s",
-
-  "tiered.attribute.modifier.take.0": "%s %s %s",
-  "tiered.attribute.modifier.take.1": "%s %s %s",
-  "tiered.attribute.modifier.take.2": "%s %s %s",
+  "tiered.attribute.modifier.equals.0": "%s",
+  "tiered.attribute.modifier.equals.1": "%s%%",
+  "tiered.attribute.modifier.equals.2": "%s%%",
+  "tiered.attribute.modifier.plus.0": "+%s",
+  "tiered.attribute.modifier.plus.1": "+%s%%",
+  "tiered.attribute.modifier.plus.2": "+%s%%",
+  "tiered.attribute.modifier.take.0": "-%s",
+  "tiered.attribute.modifier.take.1": "-%s%%",
+  "tiered.attribute.modifier.take.2": "-%s%%",
 
   "item.modifiers.hand": "When in Hand:",
 
