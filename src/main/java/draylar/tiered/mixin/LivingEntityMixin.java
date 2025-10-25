@@ -43,7 +43,7 @@ public abstract class LivingEntityMixin extends Entity {
 
     @Inject(method = "getEquipmentChanges", at = @At(value = "TAIL"))
     private void getEquipmentChangesMixin(CallbackInfoReturnable<Map<EquipmentSlot, ItemStack>> cir) {
-        if ((Object) this instanceof ServerPlayerEntity serverPlayerEntity) {
+        if (cir.getReturnValue() != null && (Object) this instanceof ServerPlayerEntity serverPlayerEntity) {
             this.setHealth(this.getHealth() > this.getMaxHealth() ? this.getMaxHealth() : this.getHealth());
             TieredServerPacket.writeS2CHealthPacket(serverPlayerEntity);
             ((ServerPlayerEntityAccessor) serverPlayerEntity).setSyncedHealth(serverPlayerEntity.getHealth());

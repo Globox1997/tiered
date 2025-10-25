@@ -1,8 +1,6 @@
 ### Added:
 - 
 ### Fixed:
-- Fixed multi attributes
-- Fixed max health attribute
-- Fixed multiple "when worn"
+- Fixed unnecessary packet sending
 ### Changed:
-- Tweaked tiered tooltip
+- 
