@@ -1,5 +1,5 @@
 plugins {
-	id 'fabric-loom' version '1.11-SNAPSHOT'
+	id 'fabric-loom' version '1.17-SNAPSHOT'
 	id 'maven-publish'
 }
 
@@ -51,7 +51,7 @@ dependencies {
     // 	exclude(group: "net.fabricmc.fabric-api")
   	// }
 	// EasyAnvils
-	modCompileOnly ("curse.maven:easy-anvils-682567:4556543"),{
+	modCompileOnly ("curse.maven:easy-anvils-682567:4556543") {
     	exclude(group: "net.fabricmc.fabric-api")
   	}
 }
