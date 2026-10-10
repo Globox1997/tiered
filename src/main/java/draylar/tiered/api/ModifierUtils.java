@@ -39,7 +39,7 @@ public class ModifierUtils {
         Tiered.ATTRIBUTE_DATA_LOADER.getItemAttributes().forEach((id, attribute) -> {
             if (attribute.isValid(Registries.ITEM.getId(item)) && (attribute.getWeight() > 0 || reforge)) {
                 potentialAttributes.add(Identifier.of(attribute.getID()));
-                attributeWeights.add(reforge ? attribute.getWeight() + 1 : attribute.getWeight());
+                attributeWeights.add(reforge ? Math.max(1, attribute.getWeight() + 1) : attribute.getWeight());
             }
         });
         if (potentialAttributes.size() <= 0) {
@@ -51,7 +51,7 @@ public class ModifierUtils {
             int maxWeight = attributeWeights.get(attributeWeights.size() - 1);
             for (int i = 0; i < attributeWeights.size(); i++) {
                 if (attributeWeights.get(i) > maxWeight / 2) {
-                    attributeWeights.set(i, (int) (attributeWeights.get(i) * ConfigInit.CONFIG.reforgeModifier));
+                    attributeWeights.set(i, Math.max(1, (int) (attributeWeights.get(i) * Math.max(0.0f, ConfigInit.CONFIG.reforgeModifier))));
                 }
             }
         }
@@ -63,8 +63,8 @@ public class ModifierUtils {
                     int newMaxWeight = Collections.max(attributeWeights);
                     for (int i = 0; i < attributeWeights.size(); i++) {
                         if (attributeWeights.get(i) > newMaxWeight / 3) {
-                            attributeWeights.set(i, (int) (attributeWeights.get(i)
-                                    * (1.0f - ConfigInit.CONFIG.levelzReforgeModifier * ((LevelManagerAccess) playerEntity).getLevelManager().getSkillLevel(skill.getId()))));
+                            attributeWeights.set(i, Math.max(1, (int) (attributeWeights.get(i)
+                                    * Math.max(0.0f, 1.0f - ConfigInit.CONFIG.levelzReforgeModifier * ((LevelManagerAccess) playerEntity).getLevelManager().getSkillLevel(skill.getId())))));
                         }
                     }
                     break;
@@ -77,7 +77,7 @@ public class ModifierUtils {
             int luckMaxWeight = Collections.max(attributeWeights);
             for (int i = 0; i < attributeWeights.size(); i++) {
                 if (attributeWeights.get(i) > luckMaxWeight / 3) {
-                    attributeWeights.set(i, (int) (attributeWeights.get(i) * (1.0f - ConfigInit.CONFIG.luckReforgeModifier * playerEntity.getLuck())));
+                    attributeWeights.set(i, Math.max(1, (int) (attributeWeights.get(i) * Math.max(0.0f, 1.0f - ConfigInit.CONFIG.luckReforgeModifier * playerEntity.getLuck()))));
                 }
             }
         }
@@ -86,6 +86,9 @@ public class ModifierUtils {
             int totalWeight = 0;
             for (Integer weight : attributeWeights) {
                 totalWeight += weight.intValue();
+            }
+            if (totalWeight <= 0) {
+                return potentialAttributes.get(new Random().nextInt(potentialAttributes.size()));
             }
             int randomChoice = new Random().nextInt(totalWeight);
             SortList.concurrentSort(attributeWeights, attributeWeights, potentialAttributes);
@@ -134,7 +137,7 @@ public class ModifierUtils {
     @Nullable
     public static Identifier getAttributeId(ItemStack itemStack) {
         if (itemStack.get(Tiered.TIER) != null) {
-            return Identifier.of(itemStack.get(Tiered.TIER).tier());
+            return Identifier.tryParse(itemStack.get(Tiered.TIER).tier());
         }
         return null;
     }
@@ -145,21 +148,22 @@ public class ModifierUtils {
             if (!itemStack.isEmpty() && itemStack.get(Tiered.TIER) != null) {
 
                 // Check if attribute exists
-                List<String> attributeIds = new ArrayList<>();
+                List<Identifier> attributeIds = new ArrayList<>();
                 Tiered.ATTRIBUTE_DATA_LOADER.getItemAttributes().forEach((id, attribute) -> {
                     if (attribute.isValid(Registries.ITEM.getId(itemStack.getItem()))) {
-                        attributeIds.add(attribute.getID());
+                        attributeIds.add(id);
                     }
                 });
+                Identifier currentId = getAttributeId(itemStack);
                 Identifier attributeID = null;
-                for (int i = 0; i < attributeIds.size(); i++) {
-                    if (itemStack.get(Tiered.TIER).tier().contains(attributeIds.get(i))) {
-                        attributeID = Identifier.of(attributeIds.get(i));
-                        break;
-                    } else if (i == attributeIds.size() - 1) {
-                        ModifierUtils.removeItemStackAttribute(itemStack);
-                        attributeID = ModifierUtils.getRandomAttributeIDFor(null, itemStack.getItem(), false);
-                    }
+                if (currentId != null && attributeIds.contains(currentId)) {
+                    attributeID = currentId;
+                } else if (!attributeIds.isEmpty()) {
+                    ModifierUtils.removeItemStackAttribute(itemStack);
+                    attributeID = ModifierUtils.getRandomAttributeIDFor(null, itemStack.getItem(), false);
+                } else if (currentId == null || !Tiered.ATTRIBUTE_DATA_LOADER.getItemAttributes().containsKey(currentId)) {
+                    ModifierUtils.removeItemStackAttribute(itemStack);
+                    playerInventory.setStack(u, itemStack);
                 }
 
                 // found an ID
