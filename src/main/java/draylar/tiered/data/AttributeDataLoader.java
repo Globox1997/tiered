@@ -5,6 +5,7 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonParseException;
+import draylar.tiered.api.AttributeTemplate;
 import draylar.tiered.api.PotentialAttribute;
 import draylar.tiered.gson.*;
 import net.fabricmc.fabric.api.resource.SimpleSynchronousResourceReloadListener;
@@ -44,14 +45,36 @@ public class AttributeDataLoader extends JsonDataLoader implements SimpleSynchro
             Identifier identifier = entry.getKey();
             try {
                 PotentialAttribute itemAttribute = GSON.fromJson(entry.getValue(), PotentialAttribute.class);
+                validate(itemAttribute);
                 readItemAttributes.put(Identifier.of(itemAttribute.getID()), itemAttribute);
-            } catch (IllegalArgumentException | JsonParseException exception) {
+            } catch (RuntimeException exception) {
                 LOGGER.error(PARSING_ERROR_MESSAGE, identifier, exception);
             }
         }
 
         itemAttributes = readItemAttributes;
         LOGGER.info(LOADED_TIERS_MESSAGE, readItemAttributes.size());
+    }
+
+    private static void validate(PotentialAttribute itemAttribute) {
+        if (itemAttribute == null) {
+            throw new JsonParseException("Tier is empty");
+        }
+        if (itemAttribute.getID() == null || Identifier.tryParse(itemAttribute.getID()) == null) {
+            throw new JsonParseException("Tier requires a valid id");
+        }
+        if (itemAttribute.getVerifiers() == null || itemAttribute.getVerifiers().contains(null)) {
+            throw new JsonParseException("Tier " + itemAttribute.getID() + " requires verifiers");
+        }
+        if (itemAttribute.getAttributes() == null) {
+            throw new JsonParseException("Tier " + itemAttribute.getID() + " requires attributes");
+        }
+        for (AttributeTemplate attributeTemplate : itemAttribute.getAttributes()) {
+            if (attributeTemplate == null || attributeTemplate.getAttributeTypeID() == null || Identifier.tryParse(attributeTemplate.getAttributeTypeID()) == null
+                    || attributeTemplate.getEntityAttributeModifier() == null) {
+                throw new JsonParseException("Tier " + itemAttribute.getID() + " has an invalid attribute entry");
+            }
+        }
     }
 
     public Map<Identifier, PotentialAttribute> getItemAttributes() {
