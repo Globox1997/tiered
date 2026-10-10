@@ -198,8 +198,9 @@ public abstract class ItemStackClientMixin {
         ItemStack stack = (ItemStack) (Object) this;
         if (stack.get(Tiered.TIER) != null) {
             // attempt to display attribute if it is valid
-            if (Tiered.ATTRIBUTE_DATA_LOADER.getItemAttributes().containsKey(Identifier.of(stack.get(Tiered.TIER).tier()))) {
-                PotentialAttribute potentialAttribute = Tiered.ATTRIBUTE_DATA_LOADER.getItemAttributes().get(Identifier.of(stack.get(Tiered.TIER).tier()));
+            Identifier tierId = Identifier.tryParse(stack.get(Tiered.TIER).tier());
+            if (tierId != null && Tiered.ATTRIBUTE_DATA_LOADER.getItemAttributes().containsKey(tierId)) {
+                PotentialAttribute potentialAttribute = Tiered.ATTRIBUTE_DATA_LOADER.getItemAttributes().get(tierId);
 
                 if (potentialAttribute != null) {
                     info.setReturnValue(Text.translatable(potentialAttribute.getID() + ".label").append(" ").append(info.getReturnValue()).setStyle(potentialAttribute.getStyle()));
