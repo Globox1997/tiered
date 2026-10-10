@@ -4,6 +4,7 @@ import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.inventory.Inventory;
 import net.minecraft.inventory.SimpleInventory;
+import net.minecraft.registry.tag.BlockTags;
 import net.minecraft.item.ArmorItem;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
@@ -17,6 +18,7 @@ import net.minecraft.world.WorldEvents;
 
 import draylar.tiered.Tiered;
 import draylar.tiered.api.ModifierUtils;
+import draylar.tiered.api.TierComponent;
 import draylar.tiered.api.TieredItemTags;
 import draylar.tiered.config.ConfigInit;
 import draylar.tiered.network.TieredServerPacket;
@@ -76,31 +78,33 @@ public class ReforgeScreenHandler extends ScreenHandler {
     }
 
     private void updateResult() {
+        this.reforgeReady = this.isReforgeReady();
+        TieredServerPacket.writeS2CReforgeReadyPacket((ServerPlayerEntity) player, !this.reforgeReady);
+    }
+
+    private boolean isReforgeReady() {
         ItemStack stack = this.getSlot(1).getStack();
-        if (this.getSlot(0).hasStack() && this.getSlot(1).hasStack() && this.getSlot(2).hasStack()) {
+        boolean ready = false;
+        if (this.getSlot(0).hasStack() && this.getSlot(1).hasStack() && this.getSlot(2).hasStack() && this.getSlot(2).getStack().isIn(TieredItemTags.REFORGE_ADDITION)) {
             Item item = stack.getItem();
             if (!stack.isIn(TieredItemTags.MODIFIER_RESTRICTED) && ModifierUtils.getRandomAttributeIDFor(null, item, false) != null && !stack.isDamaged()) {
                 List<Item> items = Tiered.REFORGE_DATA_LOADER.getReforgeBaseItems(item);
                 ItemStack baseItem = this.getSlot(0).getStack();
                 if (!items.isEmpty()) {
-                    this.reforgeReady = items.stream().anyMatch(it -> it == baseItem.getItem());
+                    ready = items.stream().anyMatch(it -> it == baseItem.getItem());
                 } else if (item instanceof ToolItem toolItem) {
-                    this.reforgeReady = toolItem.getMaterial().getRepairIngredient().test(baseItem);
+                    ready = toolItem.getMaterial().getRepairIngredient().test(baseItem);
                 } else if (item instanceof ArmorItem armorItem && armorItem.getMaterial().value().repairIngredient() != null) {
-                    this.reforgeReady = armorItem.getMaterial().value().repairIngredient().get().test(baseItem);
+                    ready = armorItem.getMaterial().value().repairIngredient().get().test(baseItem);
                 } else {
-                    this.reforgeReady = baseItem.isIn(TieredItemTags.REFORGE_BASE_ITEM);
+                    ready = baseItem.isIn(TieredItemTags.REFORGE_BASE_ITEM);
                 }
-            } else {
-                this.reforgeReady = false;
             }
-        } else {
-            this.reforgeReady = false;
         }
-        if (this.reforgeReady && !ConfigInit.CONFIG.uniqueReforge && ModifierUtils.getAttributeId(stack) != null && ModifierUtils.getAttributeId(stack).getPath().contains("unique")) {
-            this.reforgeReady = false;
+        if (ready && !ConfigInit.CONFIG.uniqueReforge && ModifierUtils.getAttributeId(stack) != null && ModifierUtils.getAttributeId(stack).getPath().contains("unique")) {
+            ready = false;
         }
-        TieredServerPacket.writeS2CReforgeReadyPacket((ServerPlayerEntity) player, !this.reforgeReady);
+        return ready;
     }
 
     @Override
@@ -112,6 +116,9 @@ public class ReforgeScreenHandler extends ScreenHandler {
     @Override
     public boolean canUse(PlayerEntity player) {
         return this.context.get((world, pos) -> {
+            if (!world.getBlockState(pos).isIn(BlockTags.ANVIL)) {
+                return false;
+            }
             return player.squaredDistanceTo((double) pos.getX() + 0.5, (double) pos.getY() + 0.5, (double) pos.getZ() + 0.5) <= 64.0;
         }, true);
     }
@@ -171,9 +178,19 @@ public class ReforgeScreenHandler extends ScreenHandler {
     }
 
     public void reforge() {
+        if (!this.isReforgeReady()) {
+            return;
+        }
         ItemStack itemStack = this.getSlot(1).getStack();
+        TierComponent oldTier = itemStack.get(Tiered.TIER);
         ModifierUtils.removeItemStackAttribute(itemStack);
         ModifierUtils.setItemStackAttribute(player, itemStack, true);
+        if (itemStack.get(Tiered.TIER) == null) {
+            if (oldTier != null) {
+                itemStack.set(Tiered.TIER, oldTier);
+            }
+            return;
+        }
 
         this.decrementStack(0);
         this.decrementStack(2);
