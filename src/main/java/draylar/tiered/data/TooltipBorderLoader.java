@@ -30,11 +30,11 @@ public class TooltipBorderLoader implements SimpleSynchronousResourceReloadListe
 
     @Override
     public void reload(ResourceManager resourceManager) {
+        TieredClient.BORDER_TEMPLATES.clear();
 
         resourceManager.findResources("tooltips", id -> id.getPath().endsWith(".json")).forEach((id, resourceRef) -> {
-            try {
-                InputStream stream = resourceRef.getInputStream();
-                JsonObject data = JsonParser.parseReader(new InputStreamReader(stream)).getAsJsonObject();
+            try (InputStream stream = resourceRef.getInputStream(); InputStreamReader reader = new InputStreamReader(stream)) {
+                JsonObject data = JsonParser.parseReader(reader).getAsJsonObject();
 
                 for (int u = 0; u < data.getAsJsonArray("tooltips").size(); u++) {
                     JsonObject data2 = (JsonObject) data.getAsJsonArray("tooltips").get(u);
