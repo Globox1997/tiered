@@ -40,9 +40,7 @@ public class DrawContextMixin {
         if (ConfigInit.CONFIG.tieredTooltip && stack.get(Tiered.TIER) != null) {
             String nbtString = stack.get(Tiered.TIER).tier();
             for (int i = 0; i < TieredClient.BORDER_TEMPLATES.size(); i++) {
-                if (!TieredClient.BORDER_TEMPLATES.get(i).containsStack(stack) && TieredClient.BORDER_TEMPLATES.get(i).containsDecider(nbtString)) {
-                    TieredClient.BORDER_TEMPLATES.get(i).addStack(stack);
-                } else if (TieredClient.BORDER_TEMPLATES.get(i).containsStack(stack)) {
+                if (TieredClient.BORDER_TEMPLATES.get(i).containsDecider(nbtString)) {
                     List<Text> text = Screen.getTooltipFromItem(client, stack);
 
                     List<TooltipComponent> list = text.stream().map(Text::asOrderedText).map(TooltipComponent::of).collect(Collectors.toList());

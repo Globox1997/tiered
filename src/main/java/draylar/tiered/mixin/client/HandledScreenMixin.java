@@ -36,9 +36,7 @@ public abstract class HandledScreenMixin extends Screen {
         if (ConfigInit.CONFIG.tieredTooltip && stack.get(Tiered.TIER) != null) {
             String tier = stack.get(Tiered.TIER).tier();
             for (int i = 0; i < TieredClient.BORDER_TEMPLATES.size(); i++) {
-                if (!TieredClient.BORDER_TEMPLATES.get(i).containsStack(stack) && TieredClient.BORDER_TEMPLATES.get(i).containsDecider(tier)) {
-                    TieredClient.BORDER_TEMPLATES.get(i).addStack(stack);
-                } else if (TieredClient.BORDER_TEMPLATES.get(i).containsStack(stack)) {
+                if (TieredClient.BORDER_TEMPLATES.get(i).containsDecider(tier)) {
                     List<Text> text = Screen.getTooltipFromItem(client, stack);
 
                     List<TooltipComponent> list = text.stream().map(Text::asOrderedText).map(TooltipComponent::of).collect(Collectors.toList());
