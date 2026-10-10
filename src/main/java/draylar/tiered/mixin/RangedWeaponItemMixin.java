@@ -25,7 +25,8 @@ public class RangedWeaponItemMixin {
     @Inject(method = "shootAll", at = @At(value = "INVOKE_ASSIGN", target = "Lnet/minecraft/item/RangedWeaponItem;createArrowEntity(Lnet/minecraft/world/World;Lnet/minecraft/entity/LivingEntity;Lnet/minecraft/item/ItemStack;Lnet/minecraft/item/ItemStack;Z)Lnet/minecraft/entity/projectile/ProjectileEntity;"), locals = LocalCapture.CAPTURE_FAILSOFT)
     private void shootAllMixin(ServerWorld world, LivingEntity shooter, Hand hand, ItemStack stack, List<ItemStack> projectiles, float speed, float divergence, boolean critical, @Nullable LivingEntity target, CallbackInfo info, float f, float g, float h, float i, int j, ItemStack itemStack, float k, ProjectileEntity projectileEntity) {
         if (projectileEntity instanceof PersistentProjectileEntity persistentProjectileEntity && persistentProjectileEntity.getOwner() instanceof PlayerEntity playerEntity) {
-            persistentProjectileEntity.setDamage(AttributeHelper.getExtraCritDamage(playerEntity, (float) persistentProjectileEntity.getDamage()));
+            float damage = AttributeHelper.getExtraRangeDamage(playerEntity, (float) persistentProjectileEntity.getDamage());
+            persistentProjectileEntity.setDamage(AttributeHelper.getExtraCritDamage(playerEntity, damage));
         }
     }
 
