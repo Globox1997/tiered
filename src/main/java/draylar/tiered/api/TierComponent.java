@@ -16,4 +16,8 @@ public record TierComponent(String tier, float durable, int operation) {
     public static final PacketCodec<ByteBuf, TierComponent> PACKET_CODEC = PacketCodec.tuple(PacketCodecs.STRING, TierComponent::tier, PacketCodecs.FLOAT, TierComponent::durable,
             PacketCodecs.INTEGER, TierComponent::operation, TierComponent::new);
 
+    public boolean hasDurableFactor() {
+        return this.durable != DEFAULT.durable() && Float.isFinite(this.durable);
+    }
+
 }
