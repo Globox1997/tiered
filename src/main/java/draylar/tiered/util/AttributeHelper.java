@@ -1,9 +1,15 @@
 package draylar.tiered.util;
 
 import draylar.tiered.api.CustomEntityAttributes;
+import net.minecraft.entity.EquipmentSlot;
 import net.minecraft.entity.attribute.EntityAttributeInstance;
 import net.minecraft.entity.attribute.EntityAttributeModifier;
 import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.item.ItemStack;
+import net.minecraft.util.Identifier;
+
+import java.util.LinkedHashMap;
+import java.util.Map;
 
 public class AttributeHelper {
 
@@ -40,21 +46,38 @@ public class AttributeHelper {
     }
 
     public static float getExtraRangeDamage(PlayerEntity playerEntity, float oldDamage) {
+        return getExtraRangeDamage(playerEntity, ItemStack.EMPTY, oldDamage);
+    }
+
+    public static float getExtraRangeDamage(PlayerEntity playerEntity, ItemStack weaponStack, float oldDamage) {
+        Map<Identifier, EntityAttributeModifier> modifiers = new LinkedHashMap<>();
         EntityAttributeInstance instance = playerEntity.getAttributeInstance(CustomEntityAttributes.RANGE_ATTACK_DAMAGE);
         if (instance != null) {
-            float rangeDamage = oldDamage;
             for (EntityAttributeModifier modifier : instance.getModifiers()) {
-                float amount = (float) modifier.value();
-
-                if (modifier.operation() == EntityAttributeModifier.Operation.ADD_VALUE) {
-                    rangeDamage += amount;
-                } else {
-                    rangeDamage *= (amount + 1.0f);
-                }
+                modifiers.put(modifier.id(), modifier);
             }
-            return Math.min(rangeDamage, Integer.MAX_VALUE);
         }
-        return oldDamage;
+        if (!weaponStack.isEmpty() && !ItemStack.areEqual(weaponStack, playerEntity.getMainHandStack()) && !ItemStack.areEqual(weaponStack, playerEntity.getOffHandStack())) {
+            weaponStack.applyAttributeModifiers(EquipmentSlot.MAINHAND, (attribute, modifier) -> {
+                if (attribute.matches(CustomEntityAttributes.RANGE_ATTACK_DAMAGE)) {
+                    modifiers.putIfAbsent(modifier.id(), modifier);
+                }
+            });
+        }
+        if (modifiers.isEmpty()) {
+            return oldDamage;
+        }
+        float rangeDamage = oldDamage;
+        for (EntityAttributeModifier modifier : modifiers.values()) {
+            float amount = (float) modifier.value();
+
+            if (modifier.operation() == EntityAttributeModifier.Operation.ADD_VALUE) {
+                rangeDamage += amount;
+            } else {
+                rangeDamage *= (amount + 1.0f);
+            }
+        }
+        return Math.min(rangeDamage, Integer.MAX_VALUE);
     }
 
     public static float getExtraCritDamage(PlayerEntity playerEntity, float oldDamage) {
