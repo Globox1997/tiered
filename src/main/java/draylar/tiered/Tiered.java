@@ -76,6 +76,8 @@ public class Tiered implements ModInitializer {
             if (success) {
                 for (int i = 0; i < server.getPlayerManager().getPlayerList().size(); i++) {
                     ModifierUtils.updateItemStackComponent(server.getPlayerManager().getPlayerList().get(i).getInventory());
+                    TieredServerPacket.writeS2CReforgeItemSyncPacket(server.getPlayerManager().getPlayerList().get(i));
+                    TieredServerPacket.writeS2CAttributePacket(server.getPlayerManager().getPlayerList().get(i));
                 }
                 LOGGER.info("Finished reload on {}", Thread.currentThread());
             } else {

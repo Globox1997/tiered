@@ -1,6 +1,6 @@
 ### Added:
 - 
 ### Fixed:
-- Fixed unnecessary packet sending
+- Sync tiers on data reload
 ### Changed:
 - 

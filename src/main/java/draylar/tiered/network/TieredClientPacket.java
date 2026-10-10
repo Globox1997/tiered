@@ -46,6 +46,9 @@ public class TieredClientPacket {
             List<Integer> itemIds = payload.itemIds();
 
             context.client().execute(() -> {
+                if (context.client().isIntegratedServerRunning()) {
+                    return;
+                }
                 Tiered.REFORGE_DATA_LOADER.clearReforgeBaseItems();
 
                 int count = 0;
@@ -61,16 +64,19 @@ public class TieredClientPacket {
             });
         });
         ClientPlayNetworking.registerGlobalReceiver(AttributePacket.PACKET_ID, (payload, context) -> {
-            // save old attributes
-            TieredClient.CACHED_ATTRIBUTES.putAll(Tiered.ATTRIBUTE_DATA_LOADER.getItemAttributes());
-            Tiered.ATTRIBUTE_DATA_LOADER.getItemAttributes().clear();
+            context.client().execute(() -> {
+                if (context.client().isIntegratedServerRunning()) {
+                    return;
+                }
+                TieredClient.CACHED_ATTRIBUTES.putAll(Tiered.ATTRIBUTE_DATA_LOADER.getItemAttributes());
+                Tiered.ATTRIBUTE_DATA_LOADER.getItemAttributes().clear();
 
-            // for each id/attribute pair, load it
-            for (int i = 0; i < payload.attributeIds().size(); i++) {
-                Identifier id = Identifier.of(payload.attributeIds().get(i));
-                PotentialAttribute pa = AttributeDataLoader.GSON.fromJson(payload.attributeJsons().get(i), PotentialAttribute.class);
-                Tiered.ATTRIBUTE_DATA_LOADER.getItemAttributes().put(id, pa);
-            }
+                for (int i = 0; i < payload.attributeIds().size(); i++) {
+                    Identifier id = Identifier.of(payload.attributeIds().get(i));
+                    PotentialAttribute pa = AttributeDataLoader.GSON.fromJson(payload.attributeJsons().get(i), PotentialAttribute.class);
+                    Tiered.ATTRIBUTE_DATA_LOADER.getItemAttributes().put(id, pa);
+                }
+            });
         });
     }
 

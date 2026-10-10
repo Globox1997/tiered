@@ -33,11 +33,12 @@ public class ReforgeDataLoader implements SimpleSynchronousResourceReloadListene
 
     @Override
     public void reload(ResourceManager resourceManager) {
+        List<Identifier> reforgeIdentifiers = new ArrayList<>();
+        Map<Identifier, List<Item>> reforgeBaseMap = new HashMap<>();
 
         resourceManager.findResources("reforge_items", id -> id.getPath().endsWith(".json")).forEach((id, resourceRef) -> {
-            try {
-                InputStream stream = resourceRef.getInputStream();
-                JsonObject data = JsonParser.parseReader(new InputStreamReader(stream)).getAsJsonObject();
+            try (InputStream stream = resourceRef.getInputStream(); InputStreamReader reader = new InputStreamReader(stream)) {
+                JsonObject data = JsonParser.parseReader(reader).getAsJsonObject();
 
                 for (int u = 0; u < data.getAsJsonArray("items").size(); u++) {
                     if (Registries.ITEM.get(Identifier.of(data.getAsJsonArray("items").get(u).getAsString())).toString().equals("air")) {
@@ -53,13 +54,19 @@ public class ReforgeDataLoader implements SimpleSynchronousResourceReloadListene
                         baseItems.add(Registries.ITEM.get(Identifier.of(data.getAsJsonArray("base").get(i).getAsString())));
                     }
 
-                    reforgeIdentifiers.add(Identifier.of(data.getAsJsonArray("items").get(u).getAsString()));
-                    reforgeBaseMap.put(Identifier.of(data.getAsJsonArray("items").get(u).getAsString()), baseItems);
+                    Identifier itemId = Identifier.of(data.getAsJsonArray("items").get(u).getAsString());
+                    if (!reforgeIdentifiers.contains(itemId)) {
+                        reforgeIdentifiers.add(itemId);
+                    }
+                    reforgeBaseMap.put(itemId, baseItems);
                 }
             } catch (Exception e) {
                 LOGGER.error("Error occurred while loading resource {}. {}", id.toString(), e.toString());
             }
         });
+
+        this.reforgeIdentifiers = reforgeIdentifiers;
+        this.reforgeBaseMap = reforgeBaseMap;
     }
 
     public List<Item> getReforgeBaseItems(Item item) {
