@@ -26,12 +26,6 @@ public class TieredConfig implements ConfigData {
     public boolean uniqueReforge = false;
 
     @ConfigEntry.Category("client_settings")
-    public boolean showReforgingTab = true;
-    @ConfigEntry.Category("client_settings")
-    public int xIconPosition = 0;
-    @ConfigEntry.Category("client_settings")
-    public int yIconPosition = 0;
-    @ConfigEntry.Category("client_settings")
     public boolean tieredTooltip = true;
     @ConfigEntry.Category("client_settings")
     public boolean centerName = true;

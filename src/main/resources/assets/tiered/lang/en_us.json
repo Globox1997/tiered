@@ -232,9 +232,6 @@
   "text.autoconfig.tiered.option.levelzReforgeModifier": "LevelZ Reforge Modifier",
   "text.autoconfig.tiered.option.luckReforgeModifier": "Luck Reforge Modifier",
   "text.autoconfig.tiered.option.uniqueReforge": "Unique Reforge",
-  "text.autoconfig.tiered.option.showReforgingTab": "Show Reforging Tab",
-  "text.autoconfig.tiered.option.xIconPosition": "Icon X Position",
-  "text.autoconfig.tiered.option.yIconPosition": "Icon Y Position",
   "text.autoconfig.tiered.option.tieredTooltip": "Tiered Tooltip",
   "text.autoconfig.tiered.option.centerName": "Center Name",
 
