@@ -7,6 +7,8 @@ import net.minecraft.registry.RegistryKeys;
 import net.minecraft.registry.tag.TagKey;
 import net.minecraft.util.Identifier;
 
+import java.util.Objects;
+
 public class ItemVerifier {
 
     private final String id;
@@ -63,21 +65,17 @@ public class ItemVerifier {
 
     @Override
     public int hashCode() {
-        return id == null ? 0 : id.hashCode() * 17 + (tag == null ? 0 : tag.hashCode());
+        return Objects.hash(id, tag);
     }
 
     @Override
     public boolean equals(Object obj) {
+        if (this == obj) {
+            return true;
+        }
         if (!(obj instanceof ItemVerifier other)) {
             return false;
         }
-        if (this != other) {
-            return false;
-        }
-        String thisId = this.id == null ? "" : this.id;
-        String thisTag = this.tag == null ? "" : this.tag;
-        String otherId = other.id == null ? "" : other.id;
-        String otherTag = other.tag == null ? "" : other.tag;
-        return thisId.equals(otherId) && thisTag.equals(otherTag);
+        return Objects.equals(this.id, other.id) && Objects.equals(this.tag, other.tag);
     }
 }
