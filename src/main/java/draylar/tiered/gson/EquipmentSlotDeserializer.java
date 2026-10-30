@@ -4,10 +4,9 @@ import com.google.gson.JsonDeserializationContext;
 import com.google.gson.JsonDeserializer;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonParseException;
-import net.minecraft.entity.EquipmentSlot;
-
 import java.lang.reflect.Type;
 import java.util.Locale;
+import net.minecraft.world.entity.EquipmentSlot;
 
 public class EquipmentSlotDeserializer implements JsonDeserializer<EquipmentSlot> {
 

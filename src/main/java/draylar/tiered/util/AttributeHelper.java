@@ -1,24 +1,23 @@
 package draylar.tiered.util;
 
 import draylar.tiered.api.CustomEntityAttributes;
-import net.minecraft.entity.EquipmentSlot;
-import net.minecraft.entity.attribute.EntityAttributeInstance;
-import net.minecraft.entity.attribute.EntityAttributeModifier;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.item.ItemStack;
-import net.minecraft.util.Identifier;
-
 import java.util.LinkedHashMap;
 import java.util.Map;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.entity.EquipmentSlot;
+import net.minecraft.world.entity.ai.attributes.AttributeInstance;
+import net.minecraft.world.entity.ai.attributes.AttributeModifier;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemStack;
 
 public class AttributeHelper {
 
-    public static boolean shouldMeeleCrit(PlayerEntity playerEntity) {
-        EntityAttributeInstance instance = playerEntity.getAttributeInstance(CustomEntityAttributes.CRIT_CHANCE);
+    public static boolean shouldMeeleCrit(Player playerEntity) {
+        AttributeInstance instance = playerEntity.getAttribute(CustomEntityAttributes.CRIT_CHANCE);
         if (instance != null) {
             float critChance = 0.0f;
-            for (EntityAttributeModifier modifier : instance.getModifiers()) {
-                float amount = (float) modifier.value();
+            for (AttributeModifier modifier : instance.getModifiers()) {
+                float amount = (float) modifier.amount();
                 critChance += amount;
             }
             return playerEntity.getRandom().nextDouble() < critChance;
@@ -26,14 +25,14 @@ public class AttributeHelper {
         return false;
     }
 
-    public static float getExtraDigSpeed(PlayerEntity playerEntity, float oldDigSpeed) {
-        EntityAttributeInstance instance = playerEntity.getAttributeInstance(CustomEntityAttributes.DIG_SPEED);
+    public static float getExtraDigSpeed(Player playerEntity, float oldDigSpeed) {
+        AttributeInstance instance = playerEntity.getAttribute(CustomEntityAttributes.DIG_SPEED);
         if (instance != null) {
             float extraDigSpeed = oldDigSpeed;
-            for (EntityAttributeModifier modifier : instance.getModifiers()) {
-                float amount = (float) modifier.value();
+            for (AttributeModifier modifier : instance.getModifiers()) {
+                float amount = (float) modifier.amount();
 
-                if (modifier.operation() == EntityAttributeModifier.Operation.ADD_VALUE) {
+                if (modifier.operation() == AttributeModifier.Operation.ADD_VALUE) {
                     extraDigSpeed += amount;
                 } else {
                     extraDigSpeed *= (amount + 1);
@@ -45,21 +44,21 @@ public class AttributeHelper {
         return oldDigSpeed;
     }
 
-    public static float getExtraRangeDamage(PlayerEntity playerEntity, float oldDamage) {
+    public static float getExtraRangeDamage(Player playerEntity, float oldDamage) {
         return getExtraRangeDamage(playerEntity, ItemStack.EMPTY, oldDamage);
     }
 
-    public static float getExtraRangeDamage(PlayerEntity playerEntity, ItemStack weaponStack, float oldDamage) {
-        Map<Identifier, EntityAttributeModifier> modifiers = new LinkedHashMap<>();
-        EntityAttributeInstance instance = playerEntity.getAttributeInstance(CustomEntityAttributes.RANGE_ATTACK_DAMAGE);
+    public static float getExtraRangeDamage(Player playerEntity, ItemStack weaponStack, float oldDamage) {
+        Map<ResourceLocation, AttributeModifier> modifiers = new LinkedHashMap<>();
+        AttributeInstance instance = playerEntity.getAttribute(CustomEntityAttributes.RANGE_ATTACK_DAMAGE);
         if (instance != null) {
-            for (EntityAttributeModifier modifier : instance.getModifiers()) {
+            for (AttributeModifier modifier : instance.getModifiers()) {
                 modifiers.put(modifier.id(), modifier);
             }
         }
-        if (!weaponStack.isEmpty() && !ItemStack.areEqual(weaponStack, playerEntity.getMainHandStack()) && !ItemStack.areEqual(weaponStack, playerEntity.getOffHandStack())) {
-            weaponStack.applyAttributeModifiers(EquipmentSlot.MAINHAND, (attribute, modifier) -> {
-                if (attribute.matches(CustomEntityAttributes.RANGE_ATTACK_DAMAGE)) {
+        if (!weaponStack.isEmpty() && !ItemStack.matches(weaponStack, playerEntity.getMainHandItem()) && !ItemStack.matches(weaponStack, playerEntity.getOffhandItem())) {
+            weaponStack.forEachModifier(EquipmentSlot.MAINHAND, (attribute, modifier) -> {
+                if (attribute.is(CustomEntityAttributes.RANGE_ATTACK_DAMAGE)) {
                     modifiers.putIfAbsent(modifier.id(), modifier);
                 }
             });
@@ -68,10 +67,10 @@ public class AttributeHelper {
             return oldDamage;
         }
         float rangeDamage = oldDamage;
-        for (EntityAttributeModifier modifier : modifiers.values()) {
-            float amount = (float) modifier.value();
+        for (AttributeModifier modifier : modifiers.values()) {
+            float amount = (float) modifier.amount();
 
-            if (modifier.operation() == EntityAttributeModifier.Operation.ADD_VALUE) {
+            if (modifier.operation() == AttributeModifier.Operation.ADD_VALUE) {
                 rangeDamage += amount;
             } else {
                 rangeDamage *= (amount + 1.0f);
@@ -80,14 +79,14 @@ public class AttributeHelper {
         return Math.min(rangeDamage, Integer.MAX_VALUE);
     }
 
-    public static float getExtraCritDamage(PlayerEntity playerEntity, float oldDamage) {
-        EntityAttributeInstance instance = playerEntity.getAttributeInstance(CustomEntityAttributes.CRIT_CHANCE);
+    public static float getExtraCritDamage(Player playerEntity, float oldDamage) {
+        AttributeInstance instance = playerEntity.getAttribute(CustomEntityAttributes.CRIT_CHANCE);
         if (instance != null) {
             float customChance = 0.0f;
-            for (EntityAttributeModifier modifier : instance.getModifiers()) {
-                customChance += (float) modifier.value();
+            for (AttributeModifier modifier : instance.getModifiers()) {
+                customChance += (float) modifier.amount();
             }
-            if (playerEntity.getWorld().getRandom().nextFloat() > (1.0f - Math.abs(customChance))) {
+            if (playerEntity.level().getRandom().nextFloat() > (1.0f - Math.abs(customChance))) {
                 float extraCrit = oldDamage;
                 if (customChance < 0.0f) {
                     extraCrit = extraCrit / 2.0f;

@@ -5,23 +5,23 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.ModifyVariable;
 
 import draylar.tiered.util.AttributeHelper;
-import net.minecraft.entity.EntityType;
-import net.minecraft.entity.projectile.PersistentProjectileEntity;
-import net.minecraft.entity.projectile.TridentEntity;
-import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.world.World;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.projectile.AbstractArrow;
+import net.minecraft.world.entity.projectile.ThrownTrident;
+import net.minecraft.world.level.Level;
 
-@Mixin(TridentEntity.class)
-public abstract class TridentEntityMixin extends PersistentProjectileEntity {
+@Mixin(ThrownTrident.class)
+public abstract class TridentEntityMixin extends AbstractArrow {
 
-    public TridentEntityMixin(EntityType<? extends PersistentProjectileEntity> entityType, World world) {
+    public TridentEntityMixin(EntityType<? extends AbstractArrow> entityType, Level world) {
         super(entityType, world);
     }
 
-    @ModifyVariable(method = "onEntityHit", at = @At(value = "INVOKE_ASSIGN", target = "Lnet/minecraft/enchantment/EnchantmentHelper;getDamage(Lnet/minecraft/server/world/ServerWorld;Lnet/minecraft/item/ItemStack;Lnet/minecraft/entity/Entity;Lnet/minecraft/entity/damage/DamageSource;F)F"), ordinal = 0)
+    @ModifyVariable(method = "onHitEntity", at = @At(value = "INVOKE_ASSIGN", target = "Lnet/minecraft/world/item/enchantment/EnchantmentHelper;modifyDamage(Lnet/minecraft/server/level/ServerLevel;Lnet/minecraft/world/item/ItemStack;Lnet/minecraft/world/entity/Entity;Lnet/minecraft/world/damagesource/DamageSource;F)F"), ordinal = 0)
     private float onEntityHitMixin(float original) {
-        if (this.getOwner() instanceof ServerPlayerEntity serverPlayerEntity) {
-            return AttributeHelper.getExtraRangeDamage(serverPlayerEntity, this.getWeaponStack(), original);
+        if (this.getOwner() instanceof ServerPlayer serverPlayerEntity) {
+            return AttributeHelper.getExtraRangeDamage(serverPlayerEntity, this.getWeaponItem(), original);
         }
         return original;
     }

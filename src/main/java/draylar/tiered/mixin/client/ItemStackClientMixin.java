@@ -4,19 +4,19 @@ import draylar.tiered.Tiered;
 import draylar.tiered.api.PotentialAttribute;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
-import net.minecraft.component.type.AttributeModifierSlot;
-import net.minecraft.component.type.AttributeModifiersComponent;
-import net.minecraft.entity.attribute.EntityAttribute;
-import net.minecraft.entity.attribute.EntityAttributeModifier;
-import net.minecraft.entity.attribute.EntityAttributes;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.item.ItemStack;
-import net.minecraft.registry.entry.RegistryEntry;
-import net.minecraft.screen.ScreenTexts;
-import net.minecraft.text.MutableText;
-import net.minecraft.text.Text;
-import net.minecraft.util.Formatting;
-import net.minecraft.util.Identifier;
+import net.minecraft.ChatFormatting;
+import net.minecraft.core.Holder;
+import net.minecraft.network.chat.CommonComponents;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.MutableComponent;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.entity.EquipmentSlotGroup;
+import net.minecraft.world.entity.ai.attributes.Attribute;
+import net.minecraft.world.entity.ai.attributes.AttributeModifier;
+import net.minecraft.world.entity.ai.attributes.Attributes;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.component.ItemAttributeModifiers;
 import org.apache.commons.lang3.mutable.MutableBoolean;
 import org.jetbrains.annotations.Nullable;
 import org.spongepowered.asm.mixin.Mixin;
@@ -44,11 +44,11 @@ public abstract class ItemStackClientMixin {
     @Unique
     private boolean slotInfo;
     @Unique
-    private Map<RegistryEntry<EntityAttribute>, List<EntityAttributeModifier>> tieredMap;
+    private Map<Holder<Attribute>, List<AttributeModifier>> tieredMap;
 
     // Three methods to remove multiple "When Worn",...
-    @Inject(method = "appendAttributeModifiersTooltip", at = @At("HEAD"))
-    private void appendAttributeModifiersTooltipMixin(Consumer<Text> textConsumer, @Nullable PlayerEntity player, CallbackInfo info) {
+    @Inject(method = "addAttributeTooltips", at = @At("HEAD"))
+    private void appendAttributeModifiersTooltipMixin(Consumer<Component> textConsumer, @Nullable Player player, CallbackInfo info) {
         ItemStack itemStack = (ItemStack) (Object) this;
         this.isTiered = itemStack.get(Tiered.TIER) != null;
         if (this.isTiered) {
@@ -58,17 +58,17 @@ public abstract class ItemStackClientMixin {
                 this.tieredMap.clear();
             }
 
-            for (AttributeModifierSlot attributeModifierSlot : AttributeModifierSlot.values()) {
+            for (EquipmentSlotGroup attributeModifierSlot : EquipmentSlotGroup.values()) {
                 MutableBoolean mutableBoolean = new MutableBoolean(false);
-                this.applyAttributeModifier(attributeModifierSlot, (attribute, modifier) -> {
-                    List<EntityAttributeModifier> modifiers;
+                this.forEachModifier(attributeModifierSlot, (attribute, modifier) -> {
+                    List<AttributeModifier> modifiers;
                     if (this.tieredMap.containsKey(attribute)) {
                         modifiers = this.tieredMap.get(attribute);
                         modifiers.add(modifier);
                     } else {
                         modifiers = new ArrayList<>();
                     }
-                    if (modifier.value() > 0.0001D || modifier.value() < -0.0001D) {
+                    if (modifier.amount() > 0.0001D || modifier.amount() < -0.0001D) {
                         this.tieredMap.put(attribute, modifiers);
                     }
                     mutableBoolean.setValue(true);
@@ -81,133 +81,133 @@ public abstract class ItemStackClientMixin {
         this.slotInfo = true;
     }
 
-    @Inject(method = "appendAttributeModifiersTooltip", at = @At(value = "INVOKE", target = "Lnet/minecraft/item/ItemStack;applyAttributeModifier(Lnet/minecraft/component/type/AttributeModifierSlot;Ljava/util/function/BiConsumer;)V"), cancellable = true)
-    private void appendAttributeModifiersTooltipTwoMixin(Consumer<Text> textConsumer, @Nullable PlayerEntity player, CallbackInfo info) {
+    @Inject(method = "addAttributeTooltips", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/item/ItemStack;forEachModifier(Lnet/minecraft/world/entity/EquipmentSlotGroup;Ljava/util/function/BiConsumer;)V"), cancellable = true)
+    private void appendAttributeModifiersTooltipTwoMixin(Consumer<Component> textConsumer, @Nullable Player player, CallbackInfo info) {
         if (this.isTiered && !this.slotInfo) {
             info.cancel();
         }
     }
 
     @Inject(method = "method_57370", at = @At(value = "INVOKE", target = "Ljava/util/function/Consumer;accept(Ljava/lang/Object;)V", ordinal = 0))
-    private void method_57370Mixin(MutableBoolean mutableBoolean, Consumer<Text> consumer, AttributeModifierSlot attributeModifierSlot, PlayerEntity playerEntity, RegistryEntry<EntityAttribute> attribute, EntityAttributeModifier modifier, CallbackInfo info) {
+    private void method_57370Mixin(MutableBoolean mutableBoolean, Consumer<Component> consumer, EquipmentSlotGroup attributeModifierSlot, Player playerEntity, Holder<Attribute> attribute, AttributeModifier modifier, CallbackInfo info) {
         if (this.isTiered) {
             this.slotInfo = false;
         }
     }
 
-    @Inject(method = "appendAttributeModifierTooltip(Ljava/util/function/Consumer;Lnet/minecraft/entity/player/PlayerEntity;Lnet/minecraft/registry/entry/RegistryEntry;Lnet/minecraft/entity/attribute/EntityAttributeModifier;)V", at = @At(value = "INVOKE", target = "Ljava/util/function/Consumer;accept(Ljava/lang/Object;)V", ordinal = 0), locals = LocalCapture.CAPTURE_FAILSOFT, cancellable = true)
-    private void appendAttributeModifierTooltipMixin(Consumer<Text> textConsumer, @Nullable PlayerEntity player, RegistryEntry<EntityAttribute> attribute, EntityAttributeModifier modifier, CallbackInfo info, double d, boolean bl, double e) {
+    @Inject(method = "addModifierTooltip(Ljava/util/function/Consumer;Lnet/minecraft/world/entity/player/Player;Lnet/minecraft/core/Holder;Lnet/minecraft/world/entity/ai/attributes/AttributeModifier;)V", at = @At(value = "INVOKE", target = "Ljava/util/function/Consumer;accept(Ljava/lang/Object;)V", ordinal = 0), locals = LocalCapture.CAPTURE_FAILSOFT, cancellable = true)
+    private void appendAttributeModifierTooltipMixin(Consumer<Component> textConsumer, @Nullable Player player, Holder<Attribute> attribute, AttributeModifier modifier, CallbackInfo info, double d, boolean bl, double e) {
         if (this.isTiered && this.tieredMap.containsKey(attribute)) {
-            MutableText text = ScreenTexts.space();
-            text.append(Text.translatable(
-                            "tiered.attribute.modifier.equals." + modifier.operation().getId(),
-                            AttributeModifiersComponent.DECIMAL_FORMAT.format(e))
-                    .formatted(Formatting.DARK_GREEN));
+            MutableComponent text = CommonComponents.space();
+            text.append(Component.translatable(
+                            "tiered.attribute.modifier.equals." + modifier.operation().id(),
+                            ItemAttributeModifiers.ATTRIBUTE_MODIFIER_FORMAT.format(e))
+                    .withStyle(ChatFormatting.DARK_GREEN));
             for (int i = 0; i < this.tieredMap.get(attribute).size(); i++) {
-                if (this.tieredMap.get(attribute).get(i).idMatches(modifier.id())) {
+                if (this.tieredMap.get(attribute).get(i).is(modifier.id())) {
                     info.cancel();
                     return;
                 }
-                EntityAttributeModifier tieredModifier = this.tieredMap.get(attribute).get(i);
+                AttributeModifier tieredModifier = this.tieredMap.get(attribute).get(i);
                 double tieredValue;
-                if (tieredModifier.operation() == EntityAttributeModifier.Operation.ADD_MULTIPLIED_BASE
-                        || tieredModifier.operation() == EntityAttributeModifier.Operation.ADD_MULTIPLIED_TOTAL) {
-                    tieredValue = tieredModifier.value() * 100.0;
-                } else if (attribute.matches(EntityAttributes.GENERIC_KNOCKBACK_RESISTANCE)) {
-                    tieredValue = tieredModifier.value() * 10.0;
+                if (tieredModifier.operation() == AttributeModifier.Operation.ADD_MULTIPLIED_BASE
+                        || tieredModifier.operation() == AttributeModifier.Operation.ADD_MULTIPLIED_TOTAL) {
+                    tieredValue = tieredModifier.amount() * 100.0;
+                } else if (attribute.is(Attributes.KNOCKBACK_RESISTANCE)) {
+                    tieredValue = tieredModifier.amount() * 10.0;
                 } else {
-                    tieredValue = tieredModifier.value();
+                    tieredValue = tieredModifier.amount();
                 }
                 boolean addition = tieredValue > 0;
-                text.append(ScreenTexts.space());
-                text.append(Text.translatable("tiered.attribute.modifier", "(" + (addition ? "+" : "") + AttributeModifiersComponent.DECIMAL_FORMAT.format(tieredValue) + (tieredModifier.operation().getId() > 0 ? "%" : "") + ")").formatted(addition ? Formatting.DARK_GREEN : Formatting.RED));
+                text.append(CommonComponents.space());
+                text.append(Component.translatable("tiered.attribute.modifier", "(" + (addition ? "+" : "") + ItemAttributeModifiers.ATTRIBUTE_MODIFIER_FORMAT.format(tieredValue) + (tieredModifier.operation().id() > 0 ? "%" : "") + ")").withStyle(addition ? ChatFormatting.DARK_GREEN : ChatFormatting.RED));
             }
-            text.append(ScreenTexts.space());
-            text.append(Text.translatable(attribute.value().getTranslationKey()).formatted(Formatting.DARK_GREEN));
+            text.append(CommonComponents.space());
+            text.append(Component.translatable(attribute.value().getDescriptionId()).withStyle(ChatFormatting.DARK_GREEN));
             textConsumer.accept(text);
             info.cancel();
         }
     }
 
-    @Inject(method = "appendAttributeModifierTooltip(Ljava/util/function/Consumer;Lnet/minecraft/entity/player/PlayerEntity;Lnet/minecraft/registry/entry/RegistryEntry;Lnet/minecraft/entity/attribute/EntityAttributeModifier;)V", at = @At(value = "INVOKE", target = "Ljava/util/function/Consumer;accept(Ljava/lang/Object;)V", ordinal = 1), locals = LocalCapture.CAPTURE_FAILSOFT, cancellable = true)
-    private void appendAttributeModifierTooltipTwoMixin(Consumer<Text> textConsumer, @Nullable PlayerEntity player, RegistryEntry<EntityAttribute> attribute, EntityAttributeModifier modifier, CallbackInfo info, double d, boolean bl, double e) {
+    @Inject(method = "addModifierTooltip(Ljava/util/function/Consumer;Lnet/minecraft/world/entity/player/Player;Lnet/minecraft/core/Holder;Lnet/minecraft/world/entity/ai/attributes/AttributeModifier;)V", at = @At(value = "INVOKE", target = "Ljava/util/function/Consumer;accept(Ljava/lang/Object;)V", ordinal = 1), locals = LocalCapture.CAPTURE_FAILSOFT, cancellable = true)
+    private void appendAttributeModifierTooltipTwoMixin(Consumer<Component> textConsumer, @Nullable Player player, Holder<Attribute> attribute, AttributeModifier modifier, CallbackInfo info, double d, boolean bl, double e) {
         if (this.isTiered && this.tieredMap.containsKey(attribute)) {
-            MutableText text = Text.translatable(
-                            "tiered.attribute.modifier.plus." + modifier.operation().getId(),
-                            AttributeModifiersComponent.DECIMAL_FORMAT.format(e))
-                    .formatted(attribute.value().getFormatting(true));
+            MutableComponent text = Component.translatable(
+                            "tiered.attribute.modifier.plus." + modifier.operation().id(),
+                            ItemAttributeModifiers.ATTRIBUTE_MODIFIER_FORMAT.format(e))
+                    .withStyle(attribute.value().getStyle(true));
             for (int i = 0; i < this.tieredMap.get(attribute).size(); i++) {
-                if (this.tieredMap.get(attribute).get(i).idMatches(modifier.id())) {
+                if (this.tieredMap.get(attribute).get(i).is(modifier.id())) {
                     info.cancel();
                     return;
                 }
 
-                EntityAttributeModifier tieredModifier = this.tieredMap.get(attribute).get(i);
+                AttributeModifier tieredModifier = this.tieredMap.get(attribute).get(i);
                 double tieredValue;
-                if (tieredModifier.operation() == EntityAttributeModifier.Operation.ADD_MULTIPLIED_BASE
-                        || tieredModifier.operation() == EntityAttributeModifier.Operation.ADD_MULTIPLIED_TOTAL) {
-                    tieredValue = tieredModifier.value() * 100.0;
-                } else if (attribute.matches(EntityAttributes.GENERIC_KNOCKBACK_RESISTANCE)) {
-                    tieredValue = tieredModifier.value() * 10.0;
+                if (tieredModifier.operation() == AttributeModifier.Operation.ADD_MULTIPLIED_BASE
+                        || tieredModifier.operation() == AttributeModifier.Operation.ADD_MULTIPLIED_TOTAL) {
+                    tieredValue = tieredModifier.amount() * 100.0;
+                } else if (attribute.is(Attributes.KNOCKBACK_RESISTANCE)) {
+                    tieredValue = tieredModifier.amount() * 10.0;
                 } else {
-                    tieredValue = tieredModifier.value();
+                    tieredValue = tieredModifier.amount();
                 }
                 boolean addition = tieredValue > 0;
-                text.append(ScreenTexts.space());
-                text.append(Text.translatable("tiered.attribute.modifier", "(" + (addition ? "+" : "") + AttributeModifiersComponent.DECIMAL_FORMAT.format(tieredValue) + (tieredModifier.operation().getId() > 0 ? "%" : "") + ")").formatted(addition ? Formatting.BLUE : Formatting.RED));
+                text.append(CommonComponents.space());
+                text.append(Component.translatable("tiered.attribute.modifier", "(" + (addition ? "+" : "") + ItemAttributeModifiers.ATTRIBUTE_MODIFIER_FORMAT.format(tieredValue) + (tieredModifier.operation().id() > 0 ? "%" : "") + ")").withStyle(addition ? ChatFormatting.BLUE : ChatFormatting.RED));
             }
-            text.append(ScreenTexts.space());
-            text.append(Text.translatable(attribute.value().getTranslationKey()).formatted(attribute.value().getFormatting(true)));
+            text.append(CommonComponents.space());
+            text.append(Component.translatable(attribute.value().getDescriptionId()).withStyle(attribute.value().getStyle(true)));
             textConsumer.accept(text);
             info.cancel();
         }
     }
 
-    @Inject(method = "appendAttributeModifierTooltip(Ljava/util/function/Consumer;Lnet/minecraft/entity/player/PlayerEntity;Lnet/minecraft/registry/entry/RegistryEntry;Lnet/minecraft/entity/attribute/EntityAttributeModifier;)V", at = @At(value = "INVOKE", target = "Ljava/util/function/Consumer;accept(Ljava/lang/Object;)V", ordinal = 2), locals = LocalCapture.CAPTURE_FAILSOFT, cancellable = true)
-    private void appendAttributeModifierTooltipThreeMixin(Consumer<Text> textConsumer, @Nullable PlayerEntity player, RegistryEntry<EntityAttribute> attribute, EntityAttributeModifier modifier, CallbackInfo info, double d, boolean bl, double e) {
+    @Inject(method = "addModifierTooltip(Ljava/util/function/Consumer;Lnet/minecraft/world/entity/player/Player;Lnet/minecraft/core/Holder;Lnet/minecraft/world/entity/ai/attributes/AttributeModifier;)V", at = @At(value = "INVOKE", target = "Ljava/util/function/Consumer;accept(Ljava/lang/Object;)V", ordinal = 2), locals = LocalCapture.CAPTURE_FAILSOFT, cancellable = true)
+    private void appendAttributeModifierTooltipThreeMixin(Consumer<Component> textConsumer, @Nullable Player player, Holder<Attribute> attribute, AttributeModifier modifier, CallbackInfo info, double d, boolean bl, double e) {
         if (this.isTiered && this.tieredMap.containsKey(attribute)) {
-            MutableText text = Text.translatable(
-                            "tiered.attribute.modifier.take." + modifier.operation().getId(),
-                            AttributeModifiersComponent.DECIMAL_FORMAT.format(-e))
-                    .formatted(attribute.value().getFormatting(false));
+            MutableComponent text = Component.translatable(
+                            "tiered.attribute.modifier.take." + modifier.operation().id(),
+                            ItemAttributeModifiers.ATTRIBUTE_MODIFIER_FORMAT.format(-e))
+                    .withStyle(attribute.value().getStyle(false));
             for (int i = 0; i < this.tieredMap.get(attribute).size(); i++) {
-                if (this.tieredMap.get(attribute).get(i).idMatches(modifier.id())) {
+                if (this.tieredMap.get(attribute).get(i).is(modifier.id())) {
                     info.cancel();
                     return;
                 }
 
-                EntityAttributeModifier tieredModifier = this.tieredMap.get(attribute).get(i);
+                AttributeModifier tieredModifier = this.tieredMap.get(attribute).get(i);
                 double tieredValue;
-                if (tieredModifier.operation() == EntityAttributeModifier.Operation.ADD_MULTIPLIED_BASE
-                        || tieredModifier.operation() == EntityAttributeModifier.Operation.ADD_MULTIPLIED_TOTAL) {
-                    tieredValue = tieredModifier.value() * 100.0;
-                } else if (attribute.matches(EntityAttributes.GENERIC_KNOCKBACK_RESISTANCE)) {
-                    tieredValue = tieredModifier.value() * 10.0;
+                if (tieredModifier.operation() == AttributeModifier.Operation.ADD_MULTIPLIED_BASE
+                        || tieredModifier.operation() == AttributeModifier.Operation.ADD_MULTIPLIED_TOTAL) {
+                    tieredValue = tieredModifier.amount() * 100.0;
+                } else if (attribute.is(Attributes.KNOCKBACK_RESISTANCE)) {
+                    tieredValue = tieredModifier.amount() * 10.0;
                 } else {
-                    tieredValue = tieredModifier.value();
+                    tieredValue = tieredModifier.amount();
                 }
                 boolean addition = tieredValue > 0;
-                text.append(ScreenTexts.space());
-                text.append(Text.translatable("tiered.attribute.modifier", "(" + (addition ? "+" : "") + AttributeModifiersComponent.DECIMAL_FORMAT.format(tieredValue) + (tieredModifier.operation().getId() > 0 ? "%" : "") + ")").formatted(addition ? Formatting.BLUE : Formatting.RED));
+                text.append(CommonComponents.space());
+                text.append(Component.translatable("tiered.attribute.modifier", "(" + (addition ? "+" : "") + ItemAttributeModifiers.ATTRIBUTE_MODIFIER_FORMAT.format(tieredValue) + (tieredModifier.operation().id() > 0 ? "%" : "") + ")").withStyle(addition ? ChatFormatting.BLUE : ChatFormatting.RED));
             }
-            text.append(ScreenTexts.space());
-            text.append(Text.translatable(attribute.value().getTranslationKey()).formatted(Formatting.RED));
+            text.append(CommonComponents.space());
+            text.append(Component.translatable(attribute.value().getDescriptionId()).withStyle(ChatFormatting.RED));
             textConsumer.accept(text);
             info.cancel();
         }
     }
 
-    @Inject(method = "getName", at = @At("RETURN"), cancellable = true)
-    private void getNameMixin(CallbackInfoReturnable<Text> info) {
+    @Inject(method = "getHoverName", at = @At("RETURN"), cancellable = true)
+    private void getNameMixin(CallbackInfoReturnable<Component> info) {
         ItemStack stack = (ItemStack) (Object) this;
         if (stack.get(Tiered.TIER) != null) {
             // attempt to display attribute if it is valid
-            Identifier tierId = Identifier.tryParse(stack.get(Tiered.TIER).tier());
+            ResourceLocation tierId = ResourceLocation.tryParse(stack.get(Tiered.TIER).tier());
             if (tierId != null && Tiered.ATTRIBUTE_DATA_LOADER.getItemAttributes().containsKey(tierId)) {
                 PotentialAttribute potentialAttribute = Tiered.ATTRIBUTE_DATA_LOADER.getItemAttributes().get(tierId);
 
                 if (potentialAttribute != null) {
-                    MutableText name = Text.translatable(potentialAttribute.getID() + ".label").append(" ").append(info.getReturnValue());
+                    MutableComponent name = Component.translatable(potentialAttribute.getID() + ".label").append(" ").append(info.getReturnValue());
                     info.setReturnValue(potentialAttribute.getStyle() != null ? name.setStyle(potentialAttribute.getStyle()) : name);
                 }
             }
@@ -215,5 +215,5 @@ public abstract class ItemStackClientMixin {
     }
 
     @Shadow
-    public abstract void applyAttributeModifier(AttributeModifierSlot slot, BiConsumer<RegistryEntry<EntityAttribute>, EntityAttributeModifier> attributeModifierConsumer);
+    public abstract void forEachModifier(EquipmentSlotGroup slot, BiConsumer<Holder<Attribute>, AttributeModifier> attributeModifierConsumer);
 }

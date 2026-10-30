@@ -1,9 +1,9 @@
 package draylar.tiered.api;
 
-import net.minecraft.item.Item;
-import net.minecraft.registry.RegistryKeys;
-import net.minecraft.registry.tag.TagKey;
-import net.minecraft.util.Identifier;
+import net.minecraft.core.registries.Registries;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.tags.TagKey;
+import net.minecraft.world.item.Item;
 
 public class TieredItemTags {
 
@@ -19,6 +19,6 @@ public class TieredItemTags {
     }
 
     private static TagKey<Item> register(String id) {
-        return TagKey.of(RegistryKeys.ITEM, Identifier.of("tiered", id));
+        return TagKey.create(Registries.ITEM, ResourceLocation.fromNamespaceAndPath("tiered", id));
     }
 }

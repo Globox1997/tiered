@@ -2,28 +2,28 @@ package draylar.tiered.gson;
 
 import com.google.gson.*;
 import draylar.tiered.mixin.access.StyleAccessor;
-import net.minecraft.text.Style;
-import net.minecraft.text.TextColor;
-import net.minecraft.util.Identifier;
-import net.minecraft.util.InvalidIdentifierException;
-import net.minecraft.util.JsonHelper;
 import org.jetbrains.annotations.Nullable;
 
 import java.lang.reflect.Type;
 import java.util.Optional;
+import net.minecraft.ResourceLocationException;
+import net.minecraft.network.chat.Style;
+import net.minecraft.network.chat.TextColor;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.util.GsonHelper;
 
 public class StyleDeserializer implements JsonDeserializer<Style> {
 
     @Nullable
     private static String parseInsertion(JsonObject root) {
-        return JsonHelper.getString(root, "insertion", null);
+        return GsonHelper.getAsString(root, "insertion", null);
     }
 
     @Nullable
     private static TextColor parseColor(JsonObject root) {
         if (root.has("color")) {
-            String string = JsonHelper.getString(root, "color");
-            return TextColor.parse(string).getOrThrow();
+            String string = GsonHelper.getAsString(root, "color");
+            return TextColor.parseColor(string).getOrThrow();
         }
         return null;
     }
@@ -37,12 +37,12 @@ public class StyleDeserializer implements JsonDeserializer<Style> {
     }
 
     @Nullable
-    private static Identifier getFont(JsonObject root) {
+    private static ResourceLocation getFont(JsonObject root) {
         if (root.has("font")) {
-            String string = JsonHelper.getString(root, "font");
+            String string = GsonHelper.getAsString(root, "font");
             try {
-                return Identifier.of(string);
-            } catch (InvalidIdentifierException invalidIdentifierException) {
+                return ResourceLocation.parse(string);
+            } catch (ResourceLocationException invalidIdentifierException) {
                 throw new JsonSyntaxException("Invalid font name: " + string);
             }
         }
@@ -64,7 +64,7 @@ public class StyleDeserializer implements JsonDeserializer<Style> {
             Boolean obfuscated = parseNullableBoolean(jsonObject, "obfuscated");
             TextColor textColor = parseColor(jsonObject);
             String insertion = parseInsertion(jsonObject);
-            Identifier font = getFont(jsonObject);
+            ResourceLocation font = getFont(jsonObject);
             return StyleAccessor.invokeOf(Optional.ofNullable(textColor), Optional.ofNullable(bold), Optional.ofNullable(italic), Optional.ofNullable(underlined), Optional.ofNullable(strikethrough),
                     Optional.ofNullable(obfuscated), Optional.empty(), Optional.empty(), Optional.ofNullable(insertion), Optional.ofNullable(font));
         }

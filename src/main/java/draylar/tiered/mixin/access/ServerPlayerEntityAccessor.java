@@ -1,12 +1,12 @@
 package draylar.tiered.mixin.access;
 
-import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.server.level.ServerPlayer;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.gen.Accessor;
 
-@Mixin(ServerPlayerEntity.class)
+@Mixin(ServerPlayer.class)
 public interface ServerPlayerEntityAccessor {
 
-    @Accessor("syncedHealth")
+    @Accessor("lastSentHealth")
     void setSyncedHealth(float syncedHealth);
 }

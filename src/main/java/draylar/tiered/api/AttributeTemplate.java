@@ -2,17 +2,16 @@ package draylar.tiered.api;
 
 import com.google.common.collect.Multimap;
 import com.google.gson.annotations.SerializedName;
-import net.minecraft.component.type.AttributeModifierSlot;
-import net.minecraft.component.type.AttributeModifiersComponent;
-import net.minecraft.entity.EquipmentSlot;
-import net.minecraft.entity.attribute.EntityAttribute;
-import net.minecraft.entity.attribute.EntityAttributeModifier;
-import net.minecraft.registry.Registries;
-import net.minecraft.registry.entry.RegistryEntry;
-import net.minecraft.util.Identifier;
-
 import java.util.Optional;
 import java.util.function.BiConsumer;
+import net.minecraft.core.Holder;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.entity.EquipmentSlot;
+import net.minecraft.world.entity.EquipmentSlotGroup;
+import net.minecraft.world.entity.ai.attributes.Attribute;
+import net.minecraft.world.entity.ai.attributes.AttributeModifier;
+import net.minecraft.world.item.component.ItemAttributeModifiers;
 
 /**
  * Stores information on an AttributeModifier template applied to an ItemStack.
@@ -29,7 +28,7 @@ public class AttributeTemplate {
     private final String attributeTypeID;
 
     @SerializedName("modifier")
-    private final EntityAttributeModifier entityAttributeModifier;
+    private final AttributeModifier entityAttributeModifier;
 
     @SerializedName("required_equipment_slots")
     private final EquipmentSlot[] requiredEquipmentSlots;
@@ -37,7 +36,7 @@ public class AttributeTemplate {
     @SerializedName("optional_equipment_slots")
     private final EquipmentSlot[] optionalEquipmentSlots;
 
-    public AttributeTemplate(String attributeTypeID, EntityAttributeModifier entityAttributeModifier, EquipmentSlot[] requiredEquipmentSlots, EquipmentSlot[] optionalEquipmentSlots) {
+    public AttributeTemplate(String attributeTypeID, AttributeModifier entityAttributeModifier, EquipmentSlot[] requiredEquipmentSlots, EquipmentSlot[] optionalEquipmentSlots) {
         this.attributeTypeID = attributeTypeID;
         this.entityAttributeModifier = entityAttributeModifier;
         this.requiredEquipmentSlots = requiredEquipmentSlots;
@@ -52,7 +51,7 @@ public class AttributeTemplate {
         return optionalEquipmentSlots;
     }
 
-    public EntityAttributeModifier getEntityAttributeModifier() {
+    public AttributeModifier getEntityAttributeModifier() {
         return entityAttributeModifier;
     }
 
@@ -61,21 +60,21 @@ public class AttributeTemplate {
     }
 
     /**
-     * Uses this {@link AttributeTemplate} to create an {@link EntityAttributeModifier}, which is placed into the given {@link Multimap}.
+     * Uses this {@link AttributeTemplate} to create an {@link AttributeModifier}, which is placed into the given {@link Multimap}.
      * <p>
      * Note that this method assumes the given {@link Multimap} is mutable.
      *
      * @param attributeConsumer biconsumer to accept {@link AttributeTemplate}
      * @param slot
      */
-    public void applyModifiers(EquipmentSlot slot, BiConsumer<RegistryEntry<EntityAttribute>, EntityAttributeModifier> attributeConsumer) {
-        Optional<RegistryEntry.Reference<EntityAttribute>> optional = Registries.ATTRIBUTE.getEntry(Identifier.of(this.attributeTypeID));
+    public void applyModifiers(EquipmentSlot slot, BiConsumer<Holder<Attribute>, AttributeModifier> attributeConsumer) {
+        Optional<Holder.Reference<Attribute>> optional = BuiltInRegistries.ATTRIBUTE.getHolder(ResourceLocation.parse(this.attributeTypeID));
 
         if (optional.isPresent()) {
-            EntityAttributeModifier cloneModifier = new EntityAttributeModifier(Identifier.of(entityAttributeModifier.id().toString() + "_" + slot.getName()), entityAttributeModifier.value(), entityAttributeModifier.operation());
+            AttributeModifier cloneModifier = new AttributeModifier(ResourceLocation.parse(entityAttributeModifier.id().toString() + "_" + slot.getName()), entityAttributeModifier.amount(), entityAttributeModifier.operation());
 
-            AttributeModifiersComponent.Entry entry = new AttributeModifiersComponent.Entry(optional.get(), cloneModifier, AttributeModifierSlot.forEquipmentSlot(slot));
-            if (entry.slot().matches(slot)) {
+            ItemAttributeModifiers.Entry entry = new ItemAttributeModifiers.Entry(optional.get(), cloneModifier, EquipmentSlotGroup.bySlot(slot));
+            if (entry.slot().test(slot)) {
                 attributeConsumer.accept(entry.attribute(), entry.modifier());
             }
         }

@@ -9,14 +9,14 @@ import draylar.tiered.api.AttributeTemplate;
 import draylar.tiered.api.ModifierUtils;
 import draylar.tiered.api.TierComponent;
 import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
-import net.minecraft.command.argument.EntityArgumentType;
-import net.minecraft.item.ItemStack;
-import net.minecraft.registry.Registries;
-import net.minecraft.server.command.CommandManager;
-import net.minecraft.server.command.ServerCommandSource;
-import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.text.Text;
-import net.minecraft.util.Identifier;
+import net.minecraft.commands.CommandSourceStack;
+import net.minecraft.commands.Commands;
+import net.minecraft.commands.arguments.EntityArgument;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.network.chat.Component;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.item.ItemStack;
 
 public class CommandInit {
 
@@ -24,34 +24,34 @@ public class CommandInit {
 
     public static void init() {
         CommandRegistrationCallback.EVENT.register((dispatcher, dedicated, environment) -> {
-            dispatcher.register((CommandManager.literal("tiered").requires((serverCommandSource) -> {
-                return serverCommandSource.hasPermissionLevel(3);
-            })).then(CommandManager.literal("tier").then(CommandManager.argument("targets", EntityArgumentType.players()).then(CommandManager.literal("common").executes((commandContext) -> {
-                return executeCommand(commandContext.getSource(), EntityArgumentType.getPlayers(commandContext, "targets"), 0);
-            })).then(CommandManager.literal("uncommon").executes((commandContext) -> {
-                return executeCommand(commandContext.getSource(), EntityArgumentType.getPlayers(commandContext, "targets"), 1);
-            })).then(CommandManager.literal("rare").executes((commandContext) -> {
-                return executeCommand(commandContext.getSource(), EntityArgumentType.getPlayers(commandContext, "targets"), 2);
-            })).then(CommandManager.literal("epic").executes((commandContext) -> {
-                return executeCommand(commandContext.getSource(), EntityArgumentType.getPlayers(commandContext, "targets"), 3);
-            })).then(CommandManager.literal("legendary").executes((commandContext) -> {
-                return executeCommand(commandContext.getSource(), EntityArgumentType.getPlayers(commandContext, "targets"), 4);
-            })).then(CommandManager.literal("unique").executes((commandContext) -> {
-                return executeCommand(commandContext.getSource(), EntityArgumentType.getPlayers(commandContext, "targets"), 5);
-            })))).then(CommandManager.literal("untier").then(CommandManager.argument("targets", EntityArgumentType.players()).executes((commandContext) -> {
-                return executeCommand(commandContext.getSource(), EntityArgumentType.getPlayers(commandContext, "targets"), -1);
+            dispatcher.register((Commands.literal("tiered").requires((serverCommandSource) -> {
+                return serverCommandSource.hasPermission(3);
+            })).then(Commands.literal("tier").then(Commands.argument("targets", EntityArgument.players()).then(Commands.literal("common").executes((commandContext) -> {
+                return executeCommand(commandContext.getSource(), EntityArgument.getPlayers(commandContext, "targets"), 0);
+            })).then(Commands.literal("uncommon").executes((commandContext) -> {
+                return executeCommand(commandContext.getSource(), EntityArgument.getPlayers(commandContext, "targets"), 1);
+            })).then(Commands.literal("rare").executes((commandContext) -> {
+                return executeCommand(commandContext.getSource(), EntityArgument.getPlayers(commandContext, "targets"), 2);
+            })).then(Commands.literal("epic").executes((commandContext) -> {
+                return executeCommand(commandContext.getSource(), EntityArgument.getPlayers(commandContext, "targets"), 3);
+            })).then(Commands.literal("legendary").executes((commandContext) -> {
+                return executeCommand(commandContext.getSource(), EntityArgument.getPlayers(commandContext, "targets"), 4);
+            })).then(Commands.literal("unique").executes((commandContext) -> {
+                return executeCommand(commandContext.getSource(), EntityArgument.getPlayers(commandContext, "targets"), 5);
+            })))).then(Commands.literal("untier").then(Commands.argument("targets", EntityArgument.players()).executes((commandContext) -> {
+                return executeCommand(commandContext.getSource(), EntityArgument.getPlayers(commandContext, "targets"), -1);
             }))));
         });
     }
 
     // 0: common; 1: uncommon; 2: rare; 3: epic; 4: legendary; 5: unique
-    private static int executeCommand(ServerCommandSource source, Collection<ServerPlayerEntity> targets, int tier) {
+    private static int executeCommand(CommandSourceStack source, Collection<ServerPlayer> targets, int tier) {
         int successCount = 0;
-        for (ServerPlayerEntity serverPlayerEntity : targets) {
-            ItemStack itemStack = serverPlayerEntity.getMainHandStack();
+        for (ServerPlayer serverPlayerEntity : targets) {
+            ItemStack itemStack = serverPlayerEntity.getMainHandItem();
 
             if (itemStack.isEmpty()) {
-                source.sendError(Text.translatable("commands.tiered.failed", serverPlayerEntity.getDisplayName()));
+                source.sendFailure(Component.translatable("commands.tiered.failed", serverPlayerEntity.getDisplayName()));
                 continue;
             }
 
@@ -60,24 +60,24 @@ public class CommandInit {
                     ModifierUtils.removeItemStackAttribute(itemStack);
                     successCount++;
 
-                    source.sendFeedback(() -> Text.translatable("commands.tiered.untier", itemStack.getItem().getName(itemStack), serverPlayerEntity.getDisplayName()), true);
+                    source.sendSuccess(() -> Component.translatable("commands.tiered.untier", itemStack.getItem().getName(itemStack), serverPlayerEntity.getDisplayName()), true);
                 } else {
-                    source.sendError(Text.translatable("commands.tiered.untier_failed", itemStack.getItem().getName(itemStack), serverPlayerEntity.getDisplayName()));
+                    source.sendFailure(Component.translatable("commands.tiered.untier_failed", itemStack.getItem().getName(itemStack), serverPlayerEntity.getDisplayName()));
                 }
             } else {
-                ArrayList<Identifier> potentialAttributes = new ArrayList<Identifier>();
+                ArrayList<ResourceLocation> potentialAttributes = new ArrayList<ResourceLocation>();
                 Tiered.ATTRIBUTE_DATA_LOADER.getItemAttributes().forEach((id, attribute) -> {
-                    if (attribute.isValid(Registries.ITEM.getId(itemStack.getItem()))) {
-                        potentialAttributes.add(Identifier.of(attribute.getID()));
+                    if (attribute.isValid(BuiltInRegistries.ITEM.getKey(itemStack.getItem()))) {
+                        potentialAttributes.add(ResourceLocation.parse(attribute.getID()));
                     }
                 });
                 if (potentialAttributes.size() <= 0) {
-                    source.sendError(Text.translatable("commands.tiered.tiering_failed", itemStack.getItem().getName(itemStack), serverPlayerEntity.getDisplayName()));
+                    source.sendFailure(Component.translatable("commands.tiered.tiering_failed", itemStack.getItem().getName(itemStack), serverPlayerEntity.getDisplayName()));
                     continue;
                 } else {
 
-                    List<Identifier> potentialTier = new ArrayList<Identifier>();
-                    for (Identifier potentialAttribute : potentialAttributes) {
+                    List<ResourceLocation> potentialTier = new ArrayList<ResourceLocation>();
+                    for (ResourceLocation potentialAttribute : potentialAttributes) {
                         if (potentialAttribute.getPath().contains(TIER_LIST.get(tier))) {
                             if (TIER_LIST.get(tier).equals("common") && potentialAttribute.getPath().contains("uncommon")) {
                                 continue;
@@ -87,29 +87,29 @@ public class CommandInit {
                     }
 
                     if (potentialTier.size() <= 0) {
-                        source.sendError(Text.translatable("commands.tiered.tiering_failed", itemStack.getItem().getName(itemStack), serverPlayerEntity.getDisplayName()));
+                        source.sendFailure(Component.translatable("commands.tiered.tiering_failed", itemStack.getItem().getName(itemStack), serverPlayerEntity.getDisplayName()));
                         continue;
                     } else {
 
                         ModifierUtils.removeItemStackAttribute(itemStack);
 
-                        Identifier attribute = potentialTier.get(serverPlayerEntity.getWorld().getRandom().nextInt(potentialTier.size()));
+                        ResourceLocation attribute = potentialTier.get(serverPlayerEntity.level().getRandom().nextInt(potentialTier.size()));
                         if (attribute != null) {
                             // add durability nbt
                             float durableFactor = -1f;
                             int operation = 0;
-                            List<AttributeTemplate> attributeList = Tiered.ATTRIBUTE_DATA_LOADER.getItemAttributes().get(Identifier.of(attribute.toString())).getAttributes();
+                            List<AttributeTemplate> attributeList = Tiered.ATTRIBUTE_DATA_LOADER.getItemAttributes().get(ResourceLocation.parse(attribute.toString())).getAttributes();
                             for (AttributeTemplate attributeTemplate : attributeList) {
                                 if (attributeTemplate.getAttributeTypeID().equals("tiered:generic.durable")) {
-                                    durableFactor = (float) Math.round(attributeTemplate.getEntityAttributeModifier().value() * 100.0f) / 100.0f;
-                                    operation = attributeTemplate.getEntityAttributeModifier().operation().getId();
+                                    durableFactor = (float) Math.round(attributeTemplate.getEntityAttributeModifier().amount() * 100.0f) / 100.0f;
+                                    operation = attributeTemplate.getEntityAttributeModifier().operation().id();
                                     break;
                                 }
                             }
                             itemStack.set(Tiered.TIER, new TierComponent(attribute.toString(), durableFactor, operation));
                             successCount++;
 
-                            source.sendFeedback(() -> Text.translatable("commands.tiered.tier", itemStack.getItem().getName(itemStack), serverPlayerEntity.getDisplayName()), true);
+                            source.sendSuccess(() -> Component.translatable("commands.tiered.tier", itemStack.getItem().getName(itemStack), serverPlayerEntity.getDisplayName()), true);
                         }
                     }
                 }

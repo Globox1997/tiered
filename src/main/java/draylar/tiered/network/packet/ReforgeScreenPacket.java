@@ -1,22 +1,22 @@
 package draylar.tiered.network.packet;
 
-import net.minecraft.network.RegistryByteBuf;
-import net.minecraft.network.codec.PacketCodec;
-import net.minecraft.network.packet.CustomPayload;
-import net.minecraft.util.Identifier;
+import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.network.codec.StreamCodec;
+import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
+import net.minecraft.resources.ResourceLocation;
 
-public record ReforgeScreenPacket(int mouseX, int mouseY, boolean reforgingScreen) implements CustomPayload {
+public record ReforgeScreenPacket(int mouseX, int mouseY, boolean reforgingScreen) implements CustomPacketPayload {
 
-    public static final CustomPayload.Id<ReforgeScreenPacket> PACKET_ID = new CustomPayload.Id<>(Identifier.of("tiered", "reforge_screen_packet"));
+    public static final CustomPacketPayload.Type<ReforgeScreenPacket> PACKET_ID = new CustomPacketPayload.Type<>(ResourceLocation.fromNamespaceAndPath("tiered", "reforge_screen_packet"));
 
-    public static final PacketCodec<RegistryByteBuf, ReforgeScreenPacket> PACKET_CODEC = PacketCodec.of((value, buf) -> {
+    public static final StreamCodec<RegistryFriendlyByteBuf, ReforgeScreenPacket> PACKET_CODEC = StreamCodec.ofMember((value, buf) -> {
         buf.writeInt(value.mouseX);
         buf.writeInt(value.mouseY);
         buf.writeBoolean(value.reforgingScreen);
     }, buf -> new ReforgeScreenPacket(buf.readInt(), buf.readInt(), buf.readBoolean()));
 
     @Override
-    public Id<? extends CustomPayload> getId() {
+    public Type<? extends CustomPacketPayload> type() {
         return PACKET_ID;
     }
 

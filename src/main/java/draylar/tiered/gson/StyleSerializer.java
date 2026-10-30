@@ -1,10 +1,10 @@
 package draylar.tiered.gson;
 
 import com.google.gson.*;
-import net.minecraft.text.Style;
 import org.jetbrains.annotations.Nullable;
 
 import java.lang.reflect.Type;
+import net.minecraft.network.chat.Style;
 
 public class StyleSerializer implements JsonSerializer<Style> {
 
@@ -31,7 +31,7 @@ public class StyleSerializer implements JsonSerializer<Style> {
             jsonObject.addProperty("obfuscated", style.isObfuscated());
         }
         if (style.getColor() != null) {
-            jsonObject.addProperty("color", style.getColor().getName());
+            jsonObject.addProperty("color", style.getColor().serialize());
         }
         if (style.getInsertion() != null) {
             jsonObject.add("insertion", jsonSerializationContext.serialize(style.getInsertion()));

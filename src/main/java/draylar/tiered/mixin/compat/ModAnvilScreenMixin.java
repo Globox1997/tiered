@@ -7,7 +7,7 @@ import fuzs.easyanvils.client.gui.screens.inventory.ModAnvilScreen;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.libz.api.Tab;
-import net.minecraft.client.gui.screen.ingame.AnvilScreen;
+import net.minecraft.client.gui.screens.inventory.AnvilScreen;
 
 @Environment(EnvType.CLIENT)
 @Mixin(ModAnvilScreen.class)

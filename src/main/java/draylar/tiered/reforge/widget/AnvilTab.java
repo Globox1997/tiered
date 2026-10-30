@@ -6,20 +6,20 @@ import draylar.tiered.network.TieredClientPacket;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.libz.api.InventoryTab;
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.text.Text;
-import net.minecraft.util.Identifier;
+import net.minecraft.client.Minecraft;
+import net.minecraft.network.chat.Component;
+import net.minecraft.resources.ResourceLocation;
 
 @Environment(EnvType.CLIENT)
 public class AnvilTab extends InventoryTab {
 
-    public AnvilTab(Text title, @Nullable Identifier texture, int preferedPos, Class<?>... screenClasses) {
+    public AnvilTab(Component title, @Nullable ResourceLocation texture, int preferedPos, Class<?>... screenClasses) {
         super(title, texture, preferedPos, screenClasses);
     }
 
     @Override
-    public void onClick(MinecraftClient client) {
-        TieredClientPacket.writeC2SScreenPacket((int) client.mouse.getX(), (int) client.mouse.getY(), false);
+    public void onClick(Minecraft client) {
+        TieredClientPacket.writeC2SScreenPacket((int) client.mouseHandler.xpos(), (int) client.mouseHandler.ypos(), false);
     }
 
 }

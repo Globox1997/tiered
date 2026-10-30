@@ -14,46 +14,46 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 
 import net.fabricmc.fabric.api.resource.SimpleSynchronousResourceReloadListener;
-import net.minecraft.item.Item;
-import net.minecraft.registry.Registries;
-import net.minecraft.resource.ResourceManager;
-import net.minecraft.util.Identifier;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.packs.resources.ResourceManager;
+import net.minecraft.world.item.Item;
 
 public class ReforgeDataLoader implements SimpleSynchronousResourceReloadListener {
 
     private static final Logger LOGGER = LogManager.getLogger("TieredZ");
 
-    private List<Identifier> reforgeIdentifiers = new ArrayList<>();
-    private Map<Identifier, List<Item>> reforgeBaseMap = new HashMap<>();
+    private List<ResourceLocation> reforgeIdentifiers = new ArrayList<>();
+    private Map<ResourceLocation, List<Item>> reforgeBaseMap = new HashMap<>();
 
     @Override
-    public Identifier getFabricId() {
-        return Identifier.of("tiered", "reforge_loader");
+    public ResourceLocation getFabricId() {
+        return ResourceLocation.fromNamespaceAndPath("tiered", "reforge_loader");
     }
 
     @Override
-    public void reload(ResourceManager resourceManager) {
-        List<Identifier> reforgeIdentifiers = new ArrayList<>();
-        Map<Identifier, List<Item>> reforgeBaseMap = new HashMap<>();
+    public void onResourceManagerReload(ResourceManager resourceManager) {
+        List<ResourceLocation> reforgeIdentifiers = new ArrayList<>();
+        Map<ResourceLocation, List<Item>> reforgeBaseMap = new HashMap<>();
 
-        resourceManager.findResources("reforge_items", id -> id.getPath().endsWith(".json")).forEach((id, resourceRef) -> {
-            try (InputStream stream = resourceRef.getInputStream(); InputStreamReader reader = new InputStreamReader(stream)) {
+        resourceManager.listResources("reforge_items", id -> id.getPath().endsWith(".json")).forEach((id, resourceRef) -> {
+            try (InputStream stream = resourceRef.open(); InputStreamReader reader = new InputStreamReader(stream)) {
                 JsonObject data = JsonParser.parseReader(reader).getAsJsonObject();
 
                 for (int u = 0; u < data.getAsJsonArray("items").size(); u++) {
-                    Identifier itemId = Identifier.tryParse(data.getAsJsonArray("items").get(u).getAsString());
-                    if (itemId == null || !Registries.ITEM.containsId(itemId)) {
+                    ResourceLocation itemId = ResourceLocation.tryParse(data.getAsJsonArray("items").get(u).getAsString());
+                    if (itemId == null || !BuiltInRegistries.ITEM.containsKey(itemId)) {
                         LOGGER.info("Resource {} was not loaded cause {} is not a valid item identifier", id.toString(), data.getAsJsonArray("items").get(u).getAsString());
                         continue;
                     }
                     List<Item> baseItems = new ArrayList<Item>();
                     for (int i = 0; i < data.getAsJsonArray("base").size(); i++) {
-                        Identifier baseId = Identifier.tryParse(data.getAsJsonArray("base").get(i).getAsString());
-                        if (baseId == null || !Registries.ITEM.containsId(baseId)) {
+                        ResourceLocation baseId = ResourceLocation.tryParse(data.getAsJsonArray("base").get(i).getAsString());
+                        if (baseId == null || !BuiltInRegistries.ITEM.containsKey(baseId)) {
                             LOGGER.info("Resource {} was not loaded cause {} is not a valid item identifier", id.toString(), data.getAsJsonArray("base").get(i).getAsString());
                             continue;
                         }
-                        baseItems.add(Registries.ITEM.get(baseId));
+                        baseItems.add(BuiltInRegistries.ITEM.get(baseId));
                     }
 
                     if (!reforgeIdentifiers.contains(itemId)) {
@@ -72,13 +72,13 @@ public class ReforgeDataLoader implements SimpleSynchronousResourceReloadListene
 
     public List<Item> getReforgeBaseItems(Item item) {
         ArrayList<Item> list = new ArrayList<Item>();
-        if (reforgeBaseMap.containsKey(Registries.ITEM.getId(item))) {
-            return reforgeBaseMap.get(Registries.ITEM.getId(item));
+        if (reforgeBaseMap.containsKey(BuiltInRegistries.ITEM.getKey(item))) {
+            return reforgeBaseMap.get(BuiltInRegistries.ITEM.getKey(item));
         }
         return list;
     }
 
-    public void putReforgeBaseItems(Identifier id, List<Item> items) {
+    public void putReforgeBaseItems(ResourceLocation id, List<Item> items) {
         reforgeBaseMap.put(id, items);
     }
 
@@ -86,7 +86,7 @@ public class ReforgeDataLoader implements SimpleSynchronousResourceReloadListene
         reforgeBaseMap.clear();
     }
 
-    public List<Identifier> getReforgeIdentifiers() {
+    public List<ResourceLocation> getReforgeIdentifiers() {
         return reforgeIdentifiers;
     }
 

@@ -17,9 +17,9 @@ import draylar.tiered.reforge.ReforgeScreen;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
-import net.minecraft.item.Item;
-import net.minecraft.registry.Registries;
-import net.minecraft.util.Identifier;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.item.Item;
 
 @Environment(EnvType.CLIENT)
 public class TieredClientPacket {
@@ -30,7 +30,7 @@ public class TieredClientPacket {
             boolean disableButton = payload.disableButton();
             boolean uniqueReforge = payload.uniqueReforge();
             context.client().execute(() -> {
-                if (context.client().currentScreen instanceof ReforgeScreen reforgeScreen) {
+                if (context.client().screen instanceof ReforgeScreen reforgeScreen) {
                     reforgeScreen.reforgeButton.setDisabled(disableButton);
                     reforgeScreen.setUniqueReforge(uniqueReforge);
                 }
@@ -43,12 +43,12 @@ public class TieredClientPacket {
             });
         });
         ClientPlayNetworking.registerGlobalReceiver(ReforgeItemSyncPacket.PACKET_ID, (payload, context) -> {
-            List<Identifier> identifiers = payload.ids();
+            List<ResourceLocation> identifiers = payload.ids();
             List<Integer> listSize = payload.listSize();
             List<Integer> itemIds = payload.itemIds();
 
             context.client().execute(() -> {
-                if (context.client().isIntegratedServerRunning()) {
+                if (context.client().hasSingleplayerServer()) {
                     return;
                 }
                 Tiered.REFORGE_DATA_LOADER.clearReforgeBaseItems();
@@ -58,7 +58,7 @@ public class TieredClientPacket {
                     List<Item> items = new ArrayList<Item>();
 
                     for (int u = count; u < (count + listSize.get(i)); u++) {
-                        items.add(Registries.ITEM.get(itemIds.get(u)));
+                        items.add(BuiltInRegistries.ITEM.byId(itemIds.get(u)));
                     }
                     count += listSize.get(i);
                     Tiered.REFORGE_DATA_LOADER.putReforgeBaseItems(identifiers.get(i), items);
@@ -67,7 +67,7 @@ public class TieredClientPacket {
         });
         ClientPlayNetworking.registerGlobalReceiver(AttributePacket.PACKET_ID, (payload, context) -> {
             context.client().execute(() -> {
-                if (context.client().isIntegratedServerRunning()) {
+                if (context.client().hasSingleplayerServer()) {
                     return;
                 }
                 if (payload.reset()) {
@@ -76,7 +76,7 @@ public class TieredClientPacket {
                 }
 
                 for (int i = 0; i < payload.attributeIds().size(); i++) {
-                    Identifier id = Identifier.of(payload.attributeIds().get(i));
+                    ResourceLocation id = ResourceLocation.parse(payload.attributeIds().get(i));
                     PotentialAttribute pa = AttributeDataLoader.GSON.fromJson(payload.attributeJsons().get(i), PotentialAttribute.class);
                     Tiered.ATTRIBUTE_DATA_LOADER.getItemAttributes().put(id, pa);
                 }

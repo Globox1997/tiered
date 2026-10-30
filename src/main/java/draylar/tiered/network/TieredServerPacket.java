@@ -19,14 +19,14 @@ import draylar.tiered.reforge.ReforgeScreenHandler;
 import net.fabricmc.fabric.api.networking.v1.PayloadTypeRegistry;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.libz.network.LibzServerPacket;
-import net.minecraft.registry.Registries;
-import net.minecraft.screen.AnvilScreenHandler;
-import net.minecraft.screen.ScreenHandlerContext;
-import net.minecraft.screen.SimpleNamedScreenHandlerFactory;
-import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.text.Text;
-import net.minecraft.util.Identifier;
-import net.minecraft.util.math.BlockPos;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.network.chat.Component;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.SimpleMenuProvider;
+import net.minecraft.world.inventory.AnvilMenu;
+import net.minecraft.world.inventory.ContainerLevelAccess;
 
 public class TieredServerPacket {
 
@@ -43,18 +43,18 @@ public class TieredServerPacket {
             int mouseY = payload.mouseY();
             Boolean reforgingScreen = payload.reforgingScreen();
 
-            BlockPos pos = reforgingScreen ? (context.player().currentScreenHandler instanceof AnvilScreenHandler ? ((AnvilScreenHandlerAccess) context.player().currentScreenHandler).getPos() : null)
-                    : (context.player().currentScreenHandler instanceof ReforgeScreenHandler ? ((ReforgeScreenHandler) context.player().currentScreenHandler).getPos() : null);
+            BlockPos pos = reforgingScreen ? (context.player().containerMenu instanceof AnvilMenu ? ((AnvilScreenHandlerAccess) context.player().containerMenu).getPos() : null)
+                    : (context.player().containerMenu instanceof ReforgeScreenHandler ? ((ReforgeScreenHandler) context.player().containerMenu).getPos() : null);
             if (pos != null) {
                 context.server().execute(() -> {
                     if (reforgingScreen) {
-                        context.player().openHandledScreen(new SimpleNamedScreenHandlerFactory((syncId, playerInventory, playerx) -> {
-                            return new ReforgeScreenHandler(syncId, playerInventory, ScreenHandlerContext.create(playerx.getWorld(), pos));
-                        }, Text.translatable("container.reforge")));
+                        context.player().openMenu(new SimpleMenuProvider((syncId, playerInventory, playerx) -> {
+                            return new ReforgeScreenHandler(syncId, playerInventory, ContainerLevelAccess.create(playerx.level(), pos));
+                        }, Component.translatable("container.reforge")));
                     } else {
-                        context.player().openHandledScreen(new SimpleNamedScreenHandlerFactory((syncId, playerInventory, playerx) -> {
-                            return new AnvilScreenHandler(syncId, playerInventory, ScreenHandlerContext.create(playerx.getWorld(), pos));
-                        }, Text.translatable("container.repair")));
+                        context.player().openMenu(new SimpleMenuProvider((syncId, playerInventory, playerx) -> {
+                            return new AnvilMenu(syncId, playerInventory, ContainerLevelAccess.create(playerx.level(), pos));
+                        }, Component.translatable("container.repair")));
                     }
                     LibzServerPacket.writeS2CMousePositionPacket(context.player(), mouseX, mouseY);
                 });
@@ -62,23 +62,23 @@ public class TieredServerPacket {
         });
         ServerPlayNetworking.registerGlobalReceiver(ReforgePacket.PACKET_ID, (payload, context) -> {
             context.server().execute(() -> {
-                if (context.player().currentScreenHandler instanceof ReforgeScreenHandler reforgeScreenHandler) {
+                if (context.player().containerMenu instanceof ReforgeScreenHandler reforgeScreenHandler) {
                     reforgeScreenHandler.reforge();
                 }
             });
         });
     }
 
-    public static void writeS2CHealthPacket(ServerPlayerEntity serverPlayerEntity) {
+    public static void writeS2CHealthPacket(ServerPlayer serverPlayerEntity) {
         ServerPlayNetworking.send(serverPlayerEntity, new HealthPacket(serverPlayerEntity.getHealth()));
     }
 
-    public static void writeS2CReforgeReadyPacket(ServerPlayerEntity serverPlayerEntity, boolean disableButton) {
+    public static void writeS2CReforgeReadyPacket(ServerPlayer serverPlayerEntity, boolean disableButton) {
         ServerPlayNetworking.send(serverPlayerEntity, new ReforgeReadyPacket(disableButton, ConfigInit.CONFIG.uniqueReforge));
     }
 
-    public static void writeS2CReforgeItemSyncPacket(ServerPlayerEntity serverPlayerEntity) {
-        List<Identifier> ids = new ArrayList<Identifier>();
+    public static void writeS2CReforgeItemSyncPacket(ServerPlayer serverPlayerEntity) {
+        List<ResourceLocation> ids = new ArrayList<ResourceLocation>();
         List<Integer> listSize = new ArrayList<Integer>();
         List<Integer> itemIds = new ArrayList<Integer>();
 
@@ -86,8 +86,8 @@ public class TieredServerPacket {
             ids.add(id);
 
             List<Integer> list = new ArrayList<Integer>();
-            Tiered.REFORGE_DATA_LOADER.getReforgeBaseItems(Registries.ITEM.get(id)).forEach(item -> {
-                list.add(Registries.ITEM.getRawId(item));
+            Tiered.REFORGE_DATA_LOADER.getReforgeBaseItems(BuiltInRegistries.ITEM.get(id)).forEach(item -> {
+                list.add(BuiltInRegistries.ITEM.getId(item));
             });
             listSize.add(list.size());
 
@@ -99,13 +99,13 @@ public class TieredServerPacket {
         ServerPlayNetworking.send(serverPlayerEntity, new ReforgeItemSyncPacket(ids, listSize, itemIds));
     }
 
-    public static void writeS2CAttributePacket(ServerPlayerEntity serverPlayerEntity) {
+    public static void writeS2CAttributePacket(ServerPlayer serverPlayerEntity) {
         List<String> attributeIds = new ArrayList<String>();
         List<String> attributeJsons = new ArrayList<String>();
         boolean reset = true;
         int packetLength = 0;
 
-        for (Map.Entry<Identifier, PotentialAttribute> entry : Tiered.ATTRIBUTE_DATA_LOADER.getItemAttributes().entrySet()) {
+        for (Map.Entry<ResourceLocation, PotentialAttribute> entry : Tiered.ATTRIBUTE_DATA_LOADER.getItemAttributes().entrySet()) {
             String id = entry.getKey().toString();
             String json = AttributeDataLoader.GSON.toJson(entry.getValue());
             int entryLength = id.length() + json.length();

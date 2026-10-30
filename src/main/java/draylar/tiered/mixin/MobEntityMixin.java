@@ -11,34 +11,34 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 import draylar.tiered.api.ModifierUtils;
 import draylar.tiered.config.ConfigInit;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.EntityData;
-import net.minecraft.entity.EquipmentSlot;
-import net.minecraft.entity.SpawnReason;
-import net.minecraft.entity.mob.MobEntity;
-import net.minecraft.item.ItemStack;
-import net.minecraft.nbt.NbtCompound;
-import net.minecraft.world.LocalDifficulty;
-import net.minecraft.world.ServerWorldAccess;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.world.DifficultyInstance;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EquipmentSlot;
+import net.minecraft.world.entity.Mob;
+import net.minecraft.world.entity.MobSpawnType;
+import net.minecraft.world.entity.SpawnGroupData;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.ServerLevelAccessor;
 
-@Mixin(MobEntity.class)
+@Mixin(Mob.class)
 public class MobEntityMixin {
 
     @Unique
     private boolean tieredPending = false;
 
-    @Inject(method = "initialize", at = @At("TAIL"))
-    private void initializeMixin(ServerWorldAccess world, LocalDifficulty difficulty, SpawnReason spawnReason, @Nullable EntityData entityData, CallbackInfoReturnable<EntityData> info) {
+    @Inject(method = "finalizeSpawn", at = @At("TAIL"))
+    private void initializeMixin(ServerLevelAccessor world, DifficultyInstance difficulty, MobSpawnType spawnReason, @Nullable SpawnGroupData entityData, CallbackInfoReturnable<SpawnGroupData> info) {
         this.tieredPending = true;
     }
 
     @Inject(method = "tick", at = @At("HEAD"))
     private void tickMixin(CallbackInfo info) {
-        if (this.tieredPending && !((Entity) (Object) this).getWorld().isClient()) {
+        if (this.tieredPending && !((Entity) (Object) this).level().isClientSide()) {
             this.tieredPending = false;
             if (ConfigInit.CONFIG.entityItemModifier) {
                 for (EquipmentSlot equipmentSlot : EquipmentSlot.values()) {
-                    ItemStack itemStack = this.getEquippedStack(equipmentSlot);
+                    ItemStack itemStack = this.getItemBySlot(equipmentSlot);
                     if (itemStack.isEmpty()) {
                         continue;
                     }
@@ -48,20 +48,20 @@ public class MobEntityMixin {
         }
     }
 
-    @Inject(method = "writeCustomDataToNbt", at = @At("TAIL"))
-    private void writeCustomDataToNbtMixin(NbtCompound nbt, CallbackInfo info) {
+    @Inject(method = "addAdditionalSaveData", at = @At("TAIL"))
+    private void writeCustomDataToNbtMixin(CompoundTag nbt, CallbackInfo info) {
         if (this.tieredPending) {
             nbt.putBoolean("TieredPending", true);
         }
     }
 
-    @Inject(method = "readCustomDataFromNbt", at = @At("TAIL"))
-    private void readCustomDataFromNbtMixin(NbtCompound nbt, CallbackInfo info) {
+    @Inject(method = "readAdditionalSaveData", at = @At("TAIL"))
+    private void readCustomDataFromNbtMixin(CompoundTag nbt, CallbackInfo info) {
         this.tieredPending = nbt.getBoolean("TieredPending");
     }
 
     @Shadow
-    public ItemStack getEquippedStack(EquipmentSlot slot) {
+    public ItemStack getItemBySlot(EquipmentSlot slot) {
         return null;
     }
 

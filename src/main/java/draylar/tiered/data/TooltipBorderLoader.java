@@ -16,24 +16,24 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 
 import net.fabricmc.fabric.api.resource.SimpleSynchronousResourceReloadListener;
-import net.minecraft.resource.ResourceManager;
-import net.minecraft.util.Identifier;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.packs.resources.ResourceManager;
 
 public class TooltipBorderLoader implements SimpleSynchronousResourceReloadListener {
 
     private static final Logger LOGGER = LogManager.getLogger("TieredZ");
 
     @Override
-    public Identifier getFabricId() {
-        return Identifier.of("tiered", "tooltip_loader");
+    public ResourceLocation getFabricId() {
+        return ResourceLocation.fromNamespaceAndPath("tiered", "tooltip_loader");
     }
 
     @Override
-    public void reload(ResourceManager resourceManager) {
+    public void onResourceManagerReload(ResourceManager resourceManager) {
         TieredClient.BORDER_TEMPLATES.clear();
 
-        resourceManager.findResources("tooltips", id -> id.getPath().endsWith(".json")).forEach((id, resourceRef) -> {
-            try (InputStream stream = resourceRef.getInputStream(); InputStreamReader reader = new InputStreamReader(stream)) {
+        resourceManager.listResources("tooltips", id -> id.getPath().endsWith(".json")).forEach((id, resourceRef) -> {
+            try (InputStream stream = resourceRef.open(); InputStreamReader reader = new InputStreamReader(stream)) {
                 JsonObject data = JsonParser.parseReader(reader).getAsJsonObject();
 
                 for (int u = 0; u < data.getAsJsonArray("tooltips").size(); u++) {

@@ -13,14 +13,14 @@ import draylar.tiered.api.BorderTemplate;
 import draylar.tiered.config.ConfigInit;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
-import net.minecraft.client.font.TextRenderer;
-import net.minecraft.client.gui.DrawContext;
-import net.minecraft.client.gui.tooltip.HoveredTooltipPositioner;
-import net.minecraft.client.gui.tooltip.TooltipComponent;
-import net.minecraft.client.gui.tooltip.TooltipPositioner;
-import net.minecraft.item.ItemStack;
-import net.minecraft.item.tooltip.TooltipData;
-import net.minecraft.text.Text;
+import net.minecraft.client.gui.Font;
+import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.screens.inventory.tooltip.ClientTooltipComponent;
+import net.minecraft.client.gui.screens.inventory.tooltip.ClientTooltipPositioner;
+import net.minecraft.client.gui.screens.inventory.tooltip.DefaultTooltipPositioner;
+import net.minecraft.network.chat.Component;
+import net.minecraft.world.inventory.tooltip.TooltipComponent;
+import net.minecraft.world.item.ItemStack;
 
 @Environment(EnvType.CLIENT)
 public class TieredTooltip {
@@ -39,20 +39,20 @@ public class TieredTooltip {
         return null;
     }
 
-    public static void renderTieredTooltip(DrawContext context, TextRenderer textRenderer, List<Text> text, Optional<TooltipData> data, int x, int y, BorderTemplate borderTemplate) {
-        List<TooltipComponent> list = text.stream().map(Text::asOrderedText).map(TooltipComponent::of).collect(Collectors.toList());
-        data.ifPresent(tooltipData -> list.add(list.isEmpty() ? 0 : 1, TooltipComponent.of(tooltipData)));
-        renderTieredTooltipFromComponents(context, textRenderer, list, x, y, HoveredTooltipPositioner.INSTANCE, borderTemplate);
+    public static void renderTieredTooltip(GuiGraphics context, Font textRenderer, List<Component> text, Optional<TooltipComponent> data, int x, int y, BorderTemplate borderTemplate) {
+        List<ClientTooltipComponent> list = text.stream().map(Component::getVisualOrderText).map(ClientTooltipComponent::create).collect(Collectors.toList());
+        data.ifPresent(tooltipData -> list.add(list.isEmpty() ? 0 : 1, ClientTooltipComponent.create(tooltipData)));
+        renderTieredTooltipFromComponents(context, textRenderer, list, x, y, DefaultTooltipPositioner.INSTANCE, borderTemplate);
     }
 
-    public static void renderTieredTooltipFromComponents(DrawContext context, TextRenderer textRenderer, List<TooltipComponent> components, int x, int y, TooltipPositioner positioner,
+    public static void renderTieredTooltipFromComponents(GuiGraphics context, Font textRenderer, List<ClientTooltipComponent> components, int x, int y, ClientTooltipPositioner positioner,
             BorderTemplate borderTemplate) {
         if (components.isEmpty()) {
             return;
         }
         int i = 0;
         int j = components.size() == 1 ? -2 : 0;
-        for (TooltipComponent tooltipComponent : components) {
+        for (ClientTooltipComponent tooltipComponent : components) {
             if (tooltipComponent == null) {
                 continue;
             }
@@ -72,36 +72,36 @@ public class TieredTooltip {
         int l = i;
         int m = j;
 
-        Vector2ic vector2ic = positioner.getPosition(context.getScaledWindowWidth(), context.getScaledWindowHeight(), x, y, l, m);
+        Vector2ic vector2ic = positioner.positionTooltip(context.guiWidth(), context.guiHeight(), x, y, l, m);
         int n = vector2ic.x();
         int o = vector2ic.y();
-        context.getMatrices().push();
+        context.pose().pushPose();
 
         int backgroundColor = borderTemplate.getBackgroundGradient();
         int colorStart = borderTemplate.getStartGradient();
         int colorEnd = borderTemplate.getEndGradient();
 
         renderTooltipBackground(context, n, o, l, m, 400, backgroundColor, colorStart, colorEnd);
-        context.getMatrices().translate(0.0f, 0.0f, 400.0f);
+        context.pose().translate(0.0f, 0.0f, 400.0f);
         int q = o;
         int r;
-        TooltipComponent tooltipComponent2;
+        ClientTooltipComponent tooltipComponent2;
         for (r = 0; r < components.size(); ++r) {
             int nameCentering = 0;
             tooltipComponent2 = components.get(r);
             if (r == 0 && ConfigInit.CONFIG.centerName) {
                 nameCentering = i / 2 - tooltipComponent2.getWidth(textRenderer) / 2;
             }
-            tooltipComponent2.drawText(textRenderer, n + nameCentering, q, context.getMatrices().peek().getPositionMatrix(), context.getVertexConsumers());
+            tooltipComponent2.renderText(textRenderer, n + nameCentering, q, context.pose().last().pose(), context.bufferSource());
             q += tooltipComponent2.getHeight() + (r == 0 ? 2 : 0);
         }
         q = o;
         for (r = 0; r < components.size(); ++r) {
             tooltipComponent2 = components.get(r);
-            tooltipComponent2.drawItems(textRenderer, n, q, context);
+            tooltipComponent2.renderImage(textRenderer, n, q, context);
             q += tooltipComponent2.getHeight() + (r == 0 ? 2 : 0);
         }
-        context.getMatrices().pop();
+        context.pose().popPose();
 
         int border = borderTemplate.getIndex();
         int secondHalf = border > 7 ? 1 : 0;
@@ -109,27 +109,27 @@ public class TieredTooltip {
             border -= 8;
         }
 
-        context.getMatrices().push();
-        context.getMatrices().translate(0.0f, 0.0f, 400.0f);
+        context.pose().pushPose();
+        context.pose().translate(0.0f, 0.0f, 400.0f);
         // left top corner
-        context.drawTexture(borderTemplate.getIdentifier(), n - 6, o - 6, 0 + secondHalf * 64, 0 + border * 16, 8, 8, 128, 128);
+        context.blit(borderTemplate.getIdentifier(), n - 6, o - 6, 0 + secondHalf * 64, 0 + border * 16, 8, 8, 128, 128);
         // right top corner
-        context.drawTexture(borderTemplate.getIdentifier(), n + l - 2, o - 6, 56 + secondHalf * 64, 0 + border * 16, 8, 8, 128, 128);
+        context.blit(borderTemplate.getIdentifier(), n + l - 2, o - 6, 56 + secondHalf * 64, 0 + border * 16, 8, 8, 128, 128);
 
         // left down corner
-        context.drawTexture(borderTemplate.getIdentifier(), n - 6, o + m - 2, 0 + secondHalf * 64, 8 + border * 16, 8, 8, 128, 128);
+        context.blit(borderTemplate.getIdentifier(), n - 6, o + m - 2, 0 + secondHalf * 64, 8 + border * 16, 8, 8, 128, 128);
         // right down corner
-        context.drawTexture(borderTemplate.getIdentifier(), n + l - 2, o + m - 2, 56 + secondHalf * 64, 8 + border * 16, 8, 8, 128, 128);
+        context.blit(borderTemplate.getIdentifier(), n + l - 2, o + m - 2, 56 + secondHalf * 64, 8 + border * 16, 8, 8, 128, 128);
 
         // middle header
-        context.drawTexture(borderTemplate.getIdentifier(), (n - 6 + n + l + 6) / 2 - 24, o - 9, 8 + secondHalf * 64, 0 + border * 16, 48, 8, 128, 128);
+        context.blit(borderTemplate.getIdentifier(), (n - 6 + n + l + 6) / 2 - 24, o - 9, 8 + secondHalf * 64, 0 + border * 16, 48, 8, 128, 128);
         // bottom footer
-        context.drawTexture(borderTemplate.getIdentifier(), (n - 6 + n + l + 6) / 2 - 24, o + m + 1, 8 + secondHalf * 64, 8 + border * 16, 48, 8, 128, 128);
+        context.blit(borderTemplate.getIdentifier(), (n - 6 + n + l + 6) / 2 - 24, o + m + 1, 8 + secondHalf * 64, 8 + border * 16, 48, 8, 128, 128);
 
-        context.getMatrices().pop();
+        context.pose().popPose();
     }
 
-    private static void renderTooltipBackground(DrawContext context, int x, int y, int width, int height, int z, int backgroundColor, int colorStart, int colorEnd) {
+    private static void renderTooltipBackground(GuiGraphics context, int x, int y, int width, int height, int z, int backgroundColor, int colorStart, int colorEnd) {
         int i = x - 3;
         int j = y - 3;
         int k = width + 6;
@@ -142,26 +142,26 @@ public class TieredTooltip {
         renderBorder(context, i, j + 1, k, l, z, colorStart, colorEnd);
     }
 
-    private static void renderBorder(DrawContext context, int x, int y, int width, int height, int z, int startColor, int endColor) {
+    private static void renderBorder(GuiGraphics context, int x, int y, int width, int height, int z, int startColor, int endColor) {
         renderVerticalLine(context, x, y, height - 2, z, startColor, endColor);
         renderVerticalLine(context, x + width - 1, y, height - 2, z, startColor, endColor);
         renderHorizontalLine(context, x, y - 1, width, z, startColor);
         renderHorizontalLine(context, x, y - 1 + height - 1, width, z, endColor);
     }
 
-    private static void renderVerticalLine(DrawContext context, int x, int y, int height, int z, int color) {
+    private static void renderVerticalLine(GuiGraphics context, int x, int y, int height, int z, int color) {
         context.fill(x, y, x + 1, y + height, z, color);
     }
 
-    private static void renderVerticalLine(DrawContext context, int x, int y, int height, int z, int startColor, int endColor) {
+    private static void renderVerticalLine(GuiGraphics context, int x, int y, int height, int z, int startColor, int endColor) {
         context.fillGradient(x, y, x + 1, y + height, z, startColor, endColor);
     }
 
-    private static void renderHorizontalLine(DrawContext context, int x, int y, int width, int z, int color) {
+    private static void renderHorizontalLine(GuiGraphics context, int x, int y, int width, int z, int color) {
         context.fill(x, y, x + width, y + 1, z, color);
     }
 
-    private static void renderRectangle(DrawContext context, int x, int y, int width, int height, int z, int color) {
+    private static void renderRectangle(GuiGraphics context, int x, int y, int width, int height, int z, int color) {
         context.fill(x, y, x + width, y + height, z, color);
     }
 

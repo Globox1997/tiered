@@ -7,27 +7,27 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 import draylar.tiered.api.ModifierUtils;
 import draylar.tiered.config.ConfigInit;
-import net.minecraft.entity.EquipmentSlot;
-import net.minecraft.entity.decoration.ArmorStandEntity;
-import net.minecraft.item.ItemStack;
-import net.minecraft.nbt.NbtCompound;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.world.entity.EquipmentSlot;
+import net.minecraft.world.entity.decoration.ArmorStand;
+import net.minecraft.world.item.ItemStack;
 
-@Mixin(ArmorStandEntity.class)
+@Mixin(ArmorStand.class)
 public abstract class ArmorStandEntityMixin {
 
-    @Inject(method = "writeCustomDataToNbt", at = @At("TAIL"))
-    private void writeCustomDataToNbtMixin(NbtCompound nbt, CallbackInfo info) {
+    @Inject(method = "addAdditionalSaveData", at = @At("TAIL"))
+    private void writeCustomDataToNbtMixin(CompoundTag nbt, CallbackInfo info) {
         nbt.putBoolean("TieredChecked", true);
     }
 
-    @Inject(method = "readCustomDataFromNbt", at = @At("TAIL"))
-    private void readCustomDataFromNbtMixin(NbtCompound nbt, CallbackInfo info) {
-        ArmorStandEntity armorStand = (ArmorStandEntity) (Object) this;
-        if (nbt.getBoolean("TieredChecked") || nbt.contains("IsGenerated") || armorStand.getWorld().isClient() || !ConfigInit.CONFIG.entityItemModifier) {
+    @Inject(method = "readAdditionalSaveData", at = @At("TAIL"))
+    private void readCustomDataFromNbtMixin(CompoundTag nbt, CallbackInfo info) {
+        ArmorStand armorStand = (ArmorStand) (Object) this;
+        if (nbt.getBoolean("TieredChecked") || nbt.contains("IsGenerated") || armorStand.level().isClientSide() || !ConfigInit.CONFIG.entityItemModifier) {
             return;
         }
         for (EquipmentSlot equipmentSlot : EquipmentSlot.values()) {
-            ItemStack itemStack = armorStand.getEquippedStack(equipmentSlot);
+            ItemStack itemStack = armorStand.getItemBySlot(equipmentSlot);
             if (!itemStack.isEmpty()) {
                 ModifierUtils.setItemStackAttribute(null, itemStack, false);
             }

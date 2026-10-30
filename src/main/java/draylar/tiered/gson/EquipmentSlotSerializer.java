@@ -1,9 +1,8 @@
 package draylar.tiered.gson;
 
 import com.google.gson.*;
-import net.minecraft.entity.EquipmentSlot;
-
 import java.lang.reflect.Type;
+import net.minecraft.world.entity.EquipmentSlot;
 
 public class EquipmentSlotSerializer implements JsonSerializer<EquipmentSlot> {
 	@Override

@@ -12,26 +12,26 @@ import draylar.tiered.api.BorderTemplate;
 import draylar.tiered.util.TieredTooltip;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.font.TextRenderer;
-import net.minecraft.client.gui.DrawContext;
-import net.minecraft.client.gui.screen.Screen;
-import net.minecraft.item.ItemStack;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.Font;
+import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.world.item.ItemStack;
 
 @Environment(EnvType.CLIENT)
-@Mixin(DrawContext.class)
+@Mixin(GuiGraphics.class)
 public class DrawContextMixin {
 
     @Shadow
     @Mutable
     @Final
-    private MinecraftClient client;
+    private Minecraft minecraft;
 
-    @Inject(method = "drawItemTooltip", at = @At("HEAD"), cancellable = true)
-    private void drawItemTooltipMixin(TextRenderer textRenderer, ItemStack stack, int x, int y, CallbackInfo info) {
+    @Inject(method = "renderTooltip(Lnet/minecraft/client/gui/Font;Lnet/minecraft/world/item/ItemStack;II)V", at = @At("HEAD"), cancellable = true)
+    private void drawItemTooltipMixin(Font textRenderer, ItemStack stack, int x, int y, CallbackInfo info) {
         BorderTemplate borderTemplate = TieredTooltip.getBorderTemplate(stack);
         if (borderTemplate != null) {
-            TieredTooltip.renderTieredTooltip((DrawContext) (Object) this, textRenderer, Screen.getTooltipFromItem(this.client, stack), stack.getTooltipData(), x, y, borderTemplate);
+            TieredTooltip.renderTieredTooltip((GuiGraphics) (Object) this, textRenderer, Screen.getTooltipFromItem(this.minecraft, stack), stack.getTooltipImage(), x, y, borderTemplate);
             info.cancel();
         }
     }

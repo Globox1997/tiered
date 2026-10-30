@@ -7,20 +7,20 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 import draylar.tiered.access.AnvilScreenHandlerAccess;
-import net.minecraft.entity.player.PlayerInventory;
-import net.minecraft.screen.AnvilScreenHandler;
-import net.minecraft.screen.ScreenHandlerContext;
-import net.minecraft.util.math.BlockPos;
+import net.minecraft.core.BlockPos;
+import net.minecraft.world.entity.player.Inventory;
+import net.minecraft.world.inventory.AnvilMenu;
+import net.minecraft.world.inventory.ContainerLevelAccess;
 
-@Mixin(AnvilScreenHandler.class)
+@Mixin(AnvilMenu.class)
 public class AnvilScreenHandlerMixin implements AnvilScreenHandlerAccess {
 
     @Unique
     private BlockPos pos;
 
-    @Inject(method = "Lnet/minecraft/screen/AnvilScreenHandler;<init>(ILnet/minecraft/entity/player/PlayerInventory;Lnet/minecraft/screen/ScreenHandlerContext;)V", at = @At("TAIL"))
-    private void initMixin(int syncId, PlayerInventory inventory, ScreenHandlerContext context, CallbackInfo info) {
-        context.run((world, pos) -> {
+    @Inject(method = "<init>(ILnet/minecraft/world/entity/player/Inventory;Lnet/minecraft/world/inventory/ContainerLevelAccess;)V", at = @At("TAIL"))
+    private void initMixin(int syncId, Inventory inventory, ContainerLevelAccess context, CallbackInfo info) {
+        context.execute((world, pos) -> {
             AnvilScreenHandlerMixin.this.setPos(pos);
         });
 

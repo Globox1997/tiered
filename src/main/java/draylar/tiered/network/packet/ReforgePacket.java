@@ -1,19 +1,19 @@
 package draylar.tiered.network.packet;
 
-import net.minecraft.network.RegistryByteBuf;
-import net.minecraft.network.codec.PacketCodec;
-import net.minecraft.network.packet.CustomPayload;
-import net.minecraft.util.Identifier;
+import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.network.codec.StreamCodec;
+import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
+import net.minecraft.resources.ResourceLocation;
 
-public record ReforgePacket() implements CustomPayload {
+public record ReforgePacket() implements CustomPacketPayload {
 
-    public static final CustomPayload.Id<ReforgePacket> PACKET_ID = new CustomPayload.Id<>(Identifier.of("tiered", "reforge_packet"));
+    public static final CustomPacketPayload.Type<ReforgePacket> PACKET_ID = new CustomPacketPayload.Type<>(ResourceLocation.fromNamespaceAndPath("tiered", "reforge_packet"));
 
-    public static final PacketCodec<RegistryByteBuf, ReforgePacket> PACKET_CODEC = PacketCodec.of((value, buf) -> {
+    public static final StreamCodec<RegistryFriendlyByteBuf, ReforgePacket> PACKET_CODEC = StreamCodec.ofMember((value, buf) -> {
     }, buf -> new ReforgePacket());
 
     @Override
-    public Id<? extends CustomPayload> getId() {
+    public Type<? extends CustomPacketPayload> type() {
         return PACKET_ID;
     }
 
