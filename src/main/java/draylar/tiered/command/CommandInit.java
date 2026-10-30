@@ -46,22 +46,23 @@ public class CommandInit {
 
     // 0: common; 1: uncommon; 2: rare; 3: epic; 4: legendary; 5: unique
     private static int executeCommand(ServerCommandSource source, Collection<ServerPlayerEntity> targets, int tier) {
-        // loop over players
+        int successCount = 0;
         for (ServerPlayerEntity serverPlayerEntity : targets) {
             ItemStack itemStack = serverPlayerEntity.getMainHandStack();
 
             if (itemStack.isEmpty()) {
-                source.sendFeedback(() -> Text.translatable("commands.tiered.failed", serverPlayerEntity.getDisplayName()), true);
+                source.sendError(Text.translatable("commands.tiered.failed", serverPlayerEntity.getDisplayName()));
                 continue;
             }
 
             if (tier == -1) {
                 if (itemStack.get(Tiered.TIER) != null) {
                     ModifierUtils.removeItemStackAttribute(itemStack);
+                    successCount++;
 
-                    source.sendFeedback(() -> Text.translatable("commands.tiered.untier", itemStack.getItem().getName(itemStack).getString(), serverPlayerEntity.getDisplayName()), true);
+                    source.sendFeedback(() -> Text.translatable("commands.tiered.untier", itemStack.getItem().getName(itemStack), serverPlayerEntity.getDisplayName()), true);
                 } else {
-                    source.sendFeedback(() -> Text.translatable("commands.tiered.untier_failed", itemStack.getItem().getName(itemStack).getString(), serverPlayerEntity.getDisplayName()), true);
+                    source.sendError(Text.translatable("commands.tiered.untier_failed", itemStack.getItem().getName(itemStack), serverPlayerEntity.getDisplayName()));
                 }
             } else {
                 ArrayList<Identifier> potentialAttributes = new ArrayList<Identifier>();
@@ -71,7 +72,7 @@ public class CommandInit {
                     }
                 });
                 if (potentialAttributes.size() <= 0) {
-                    source.sendFeedback(() -> Text.translatable("commands.tiered.tiering_failed", itemStack.getItem().getName(itemStack).getString(), serverPlayerEntity.getDisplayName()), true);
+                    source.sendError(Text.translatable("commands.tiered.tiering_failed", itemStack.getItem().getName(itemStack), serverPlayerEntity.getDisplayName()));
                     continue;
                 } else {
 
@@ -86,7 +87,7 @@ public class CommandInit {
                     }
 
                     if (potentialTier.size() <= 0) {
-                        source.sendFeedback(() -> Text.translatable("commands.tiered.tiering_failed", itemStack.getItem().getName(itemStack).getString(), serverPlayerEntity.getDisplayName()), true);
+                        source.sendError(Text.translatable("commands.tiered.tiering_failed", itemStack.getItem().getName(itemStack), serverPlayerEntity.getDisplayName()));
                         continue;
                     } else {
 
@@ -106,13 +107,14 @@ public class CommandInit {
                                 }
                             }
                             itemStack.set(Tiered.TIER, new TierComponent(attribute.toString(), durableFactor, operation));
+                            successCount++;
 
-                            source.sendFeedback(() -> Text.translatable("commands.tiered.tier", itemStack.getItem().getName(itemStack).getString(), serverPlayerEntity.getDisplayName()), true);
+                            source.sendFeedback(() -> Text.translatable("commands.tiered.tier", itemStack.getItem().getName(itemStack), serverPlayerEntity.getDisplayName()), true);
                         }
                     }
                 }
             }
         }
-        return 1;
+        return successCount;
     }
 }
