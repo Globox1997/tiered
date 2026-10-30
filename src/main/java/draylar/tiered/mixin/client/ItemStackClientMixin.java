@@ -44,15 +44,19 @@ public abstract class ItemStackClientMixin {
     @Unique
     private boolean slotInfo;
     @Unique
-    private Map<RegistryEntry<EntityAttribute>, List<EntityAttributeModifier>> tieredMap = new HashMap<>();
+    private Map<RegistryEntry<EntityAttribute>, List<EntityAttributeModifier>> tieredMap;
 
     // Three methods to remove multiple "When Worn",...
     @Inject(method = "appendAttributeModifiersTooltip", at = @At("HEAD"))
     private void appendAttributeModifiersTooltipMixin(Consumer<Text> textConsumer, @Nullable PlayerEntity player, CallbackInfo info) {
         ItemStack itemStack = (ItemStack) (Object) this;
-        if (itemStack.get(Tiered.TIER) != null) {
-            this.isTiered = true;
-            this.tieredMap.clear();
+        this.isTiered = itemStack.get(Tiered.TIER) != null;
+        if (this.isTiered) {
+            if (this.tieredMap == null) {
+                this.tieredMap = new HashMap<>();
+            } else {
+                this.tieredMap.clear();
+            }
 
             for (AttributeModifierSlot attributeModifierSlot : AttributeModifierSlot.values()) {
                 MutableBoolean mutableBoolean = new MutableBoolean(false);
@@ -203,7 +207,8 @@ public abstract class ItemStackClientMixin {
                 PotentialAttribute potentialAttribute = Tiered.ATTRIBUTE_DATA_LOADER.getItemAttributes().get(tierId);
 
                 if (potentialAttribute != null) {
-                    info.setReturnValue(Text.translatable(potentialAttribute.getID() + ".label").append(" ").append(info.getReturnValue()).setStyle(potentialAttribute.getStyle()));
+                    MutableText name = Text.translatable(potentialAttribute.getID() + ".label").append(" ").append(info.getReturnValue());
+                    info.setReturnValue(potentialAttribute.getStyle() != null ? name.setStyle(potentialAttribute.getStyle()) : name);
                 }
             }
         }
