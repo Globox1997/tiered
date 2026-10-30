@@ -6,17 +6,28 @@ import net.levelz.access.LevelManagerAccess;
 import net.levelz.level.LevelManager;
 import net.levelz.level.Skill;
 import net.libz.util.SortList;
+import net.minecraft.component.type.AttributeModifierSlot;
+import net.minecraft.entity.EquipmentSlot;
+import net.minecraft.entity.attribute.EntityAttribute;
+import net.minecraft.entity.attribute.EntityAttributeInstance;
+import net.minecraft.entity.attribute.EntityAttributeModifier;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.registry.Registries;
+import net.minecraft.registry.entry.RegistryEntry;
+import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.util.Identifier;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 import java.util.Random;
+import java.util.function.BiConsumer;
 
 import org.jetbrains.annotations.Nullable;
 
@@ -142,6 +153,63 @@ public class ModifierUtils {
         return null;
     }
 
+    public static void applyTierModifiers(Map<Identifier, PotentialAttribute> itemAttributes, ItemStack itemStack, @Nullable EquipmentSlot equipmentSlot, @Nullable AttributeModifierSlot attributeModifierSlot,
+            BiConsumer<RegistryEntry<EntityAttribute>, EntityAttributeModifier> attributeModifierConsumer) {
+        if (itemStack.get(Tiered.TIER) == null) {
+            return;
+        }
+        PotentialAttribute potentialAttribute = itemAttributes.get(getAttributeId(itemStack));
+        if (potentialAttribute == null) {
+            return;
+        }
+        for (AttributeTemplate template : potentialAttribute.getAttributes()) {
+            if (template.getRequiredEquipmentSlots() != null) {
+                if (equipmentSlot != null && Arrays.asList(template.getRequiredEquipmentSlots()).contains(equipmentSlot)) {
+                    template.applyModifiers(equipmentSlot, attributeModifierConsumer);
+                } else if (attributeModifierSlot != null) {
+                    Optional<EquipmentSlot> optional = Arrays.stream(template.getRequiredEquipmentSlots()).filter(attributeModifierSlot::matches).findFirst();
+                    if (optional.isPresent() && Tiered.isPreferredEquipmentSlot(itemStack, optional.get())) {
+                        template.applyModifiers(optional.get(), attributeModifierConsumer);
+                    }
+                }
+            }
+            if (template.getOptionalEquipmentSlots() != null) {
+                if (equipmentSlot != null && Arrays.asList(template.getOptionalEquipmentSlots()).contains(equipmentSlot) && Tiered.isPreferredEquipmentSlot(itemStack, equipmentSlot)) {
+                    template.applyModifiers(equipmentSlot, attributeModifierConsumer);
+                } else if (attributeModifierSlot != null && attributeModifierSlot != AttributeModifierSlot.ANY && attributeModifierSlot != AttributeModifierSlot.HAND) {
+                    Optional<EquipmentSlot> optional = Arrays.stream(template.getOptionalEquipmentSlots()).filter(attributeModifierSlot::matches).findFirst();
+                    if (optional.isPresent() && Tiered.isPreferredEquipmentSlot(itemStack, optional.get())) {
+                        template.applyModifiers(optional.get(), attributeModifierConsumer);
+                    }
+                }
+            }
+        }
+    }
+
+    public static void refreshPlayerTiers(ServerPlayerEntity serverPlayerEntity) {
+        for (EquipmentSlot equipmentSlot : EquipmentSlot.values()) {
+            applyTierModifiers(Tiered.ATTRIBUTE_DATA_LOADER.getPreviousItemAttributes(), serverPlayerEntity.getEquippedStack(equipmentSlot), equipmentSlot, null, (attribute, modifier) -> {
+                EntityAttributeInstance instance = serverPlayerEntity.getAttributeInstance(attribute);
+                if (instance != null) {
+                    instance.removeModifier(modifier.id());
+                }
+            });
+        }
+        updateItemStackComponent(serverPlayerEntity.getInventory());
+        for (EquipmentSlot equipmentSlot : EquipmentSlot.values()) {
+            applyTierModifiers(Tiered.ATTRIBUTE_DATA_LOADER.getItemAttributes(), serverPlayerEntity.getEquippedStack(equipmentSlot), equipmentSlot, null, (attribute, modifier) -> {
+                EntityAttributeInstance instance = serverPlayerEntity.getAttributeInstance(attribute);
+                if (instance != null) {
+                    instance.removeModifier(modifier.id());
+                    instance.addTemporaryModifier(modifier);
+                }
+            });
+        }
+        if (serverPlayerEntity.getHealth() > serverPlayerEntity.getMaxHealth()) {
+            serverPlayerEntity.setHealth(serverPlayerEntity.getMaxHealth());
+        }
+    }
+
     public static void updateItemStackComponent(PlayerInventory playerInventory) {
         for (int u = 0; u < playerInventory.size(); u++) {
             ItemStack itemStack = playerInventory.getStack(u);
@@ -161,7 +229,7 @@ public class ModifierUtils {
                 } else if (!attributeIds.isEmpty()) {
                     ModifierUtils.removeItemStackAttribute(itemStack);
                     attributeID = ModifierUtils.getRandomAttributeIDFor(null, itemStack.getItem(), false);
-                } else if (currentId == null || !Tiered.ATTRIBUTE_DATA_LOADER.getItemAttributes().containsKey(currentId)) {
+                } else {
                     ModifierUtils.removeItemStackAttribute(itemStack);
                     playerInventory.setStack(u, itemStack);
                 }

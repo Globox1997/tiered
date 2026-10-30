@@ -28,9 +28,11 @@ public class TieredClientPacket {
     public static void init() {
         ClientPlayNetworking.registerGlobalReceiver(ReforgeReadyPacket.PACKET_ID, (payload, context) -> {
             boolean disableButton = payload.disableButton();
+            boolean uniqueReforge = payload.uniqueReforge();
             context.client().execute(() -> {
                 if (context.client().currentScreen instanceof ReforgeScreen reforgeScreen) {
                     reforgeScreen.reforgeButton.setDisabled(disableButton);
+                    reforgeScreen.setUniqueReforge(uniqueReforge);
                 }
             });
         });
@@ -68,8 +70,10 @@ public class TieredClientPacket {
                 if (context.client().isIntegratedServerRunning()) {
                     return;
                 }
-                TieredClient.CACHED_ATTRIBUTES.putAll(Tiered.ATTRIBUTE_DATA_LOADER.getItemAttributes());
-                Tiered.ATTRIBUTE_DATA_LOADER.getItemAttributes().clear();
+                if (payload.reset()) {
+                    TieredClient.CACHED_ATTRIBUTES.putAll(Tiered.ATTRIBUTE_DATA_LOADER.getItemAttributes());
+                    Tiered.ATTRIBUTE_DATA_LOADER.getItemAttributes().clear();
+                }
 
                 for (int i = 0; i < payload.attributeIds().size(); i++) {
                     Identifier id = Identifier.of(payload.attributeIds().get(i));

@@ -7,7 +7,6 @@ import com.mojang.blaze3d.systems.RenderSystem;
 import draylar.tiered.Tiered;
 import draylar.tiered.api.ModifierUtils;
 import draylar.tiered.api.TieredItemTags;
-import draylar.tiered.config.ConfigInit;
 import draylar.tiered.network.TieredClientPacket;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
@@ -36,6 +35,7 @@ public class ReforgeScreen extends HandledScreen<ReforgeScreenHandler> implement
     public ReforgeScreen.ReforgeButton reforgeButton;
     private ItemStack last;
     private List<Item> baseItems;
+    private boolean uniqueReforge = false;
 
     public ReforgeScreen(ReforgeScreenHandler handler, PlayerInventory playerInventory, Text title) {
         super(handler, playerInventory, title);
@@ -112,7 +112,7 @@ public class ReforgeScreen extends HandledScreen<ReforgeScreenHandler> implement
                 context.drawTooltip(this.textRenderer, tooltip, mouseX, mouseY);
             }
         }
-        if (!ConfigInit.CONFIG.uniqueReforge && !this.getScreenHandler().getSlot(1).getStack().isEmpty() && ModifierUtils.getAttributeId(this.getScreenHandler().getSlot(1).getStack()) != null
+        if (!this.uniqueReforge &&!this.getScreenHandler().getSlot(1).getStack().isEmpty() && ModifierUtils.getAttributeId(this.getScreenHandler().getSlot(1).getStack()) != null
                 && ModifierUtils.getAttributeId(this.getScreenHandler().getSlot(1).getStack()).getPath().contains("unique")) {
             context.drawTexture(TEXTURE, this.x + 74, this.y + 29, 0, 166, 28, 26);
         }
@@ -136,6 +136,10 @@ public class ReforgeScreen extends HandledScreen<ReforgeScreenHandler> implement
     @Override
     public Class<?> getParentScreenClass() {
         return AnvilScreen.class;
+    }
+
+    public void setUniqueReforge(boolean uniqueReforge) {
+        this.uniqueReforge = uniqueReforge;
     }
 
     public class ReforgeButton extends ButtonWidget {

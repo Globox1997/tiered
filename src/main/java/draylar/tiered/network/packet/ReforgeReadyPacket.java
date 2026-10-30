@@ -5,13 +5,14 @@ import net.minecraft.network.codec.PacketCodec;
 import net.minecraft.network.packet.CustomPayload;
 import net.minecraft.util.Identifier;
 
-public record ReforgeReadyPacket(boolean disableButton) implements CustomPayload {
+public record ReforgeReadyPacket(boolean disableButton, boolean uniqueReforge) implements CustomPayload {
 
     public static final CustomPayload.Id<ReforgeReadyPacket> PACKET_ID = new CustomPayload.Id<>(Identifier.of("tiered", "reforge_ready_packet"));
 
     public static final PacketCodec<RegistryByteBuf, ReforgeReadyPacket> PACKET_CODEC = PacketCodec.of((value, buf) -> {
         buf.writeBoolean(value.disableButton);
-    }, buf -> new ReforgeReadyPacket(buf.readBoolean()));
+        buf.writeBoolean(value.uniqueReforge);
+    }, buf -> new ReforgeReadyPacket(buf.readBoolean(), buf.readBoolean()));
 
     @Override
     public Id<? extends CustomPayload> getId() {

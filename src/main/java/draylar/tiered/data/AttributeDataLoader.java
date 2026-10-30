@@ -23,7 +23,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class AttributeDataLoader extends JsonDataLoader implements SimpleSynchronousResourceReloadListener {
-    public static final Gson GSON = new GsonBuilder().setPrettyPrinting().disableHtmlEscaping().registerTypeAdapter(EntityAttributeModifier.class, new EntityAttributeModifierDeserializer())
+    public static final Gson GSON = new GsonBuilder().disableHtmlEscaping().registerTypeAdapter(EntityAttributeModifier.class, new EntityAttributeModifierDeserializer())
             .registerTypeAdapter(EntityAttributeModifier.class, new EntityAttributeModifierSerializer()).registerTypeAdapter(EquipmentSlot.class, new EquipmentSlotSerializer())
             .registerTypeAdapter(EquipmentSlot.class, new EquipmentSlotDeserializer()).registerTypeAdapter(Style.class, new StyleDeserializer()).registerTypeAdapter(Style.class, new StyleSerializer()).create();
 
@@ -32,6 +32,7 @@ public class AttributeDataLoader extends JsonDataLoader implements SimpleSynchro
     private static final Logger LOGGER = LogManager.getLogger();
 
     private Map<Identifier, PotentialAttribute> itemAttributes = new HashMap<>();
+    private Map<Identifier, PotentialAttribute> previousItemAttributes = new HashMap<>();
 
     public AttributeDataLoader() {
         super(GSON, "item_attributes");
@@ -52,6 +53,7 @@ public class AttributeDataLoader extends JsonDataLoader implements SimpleSynchro
             }
         }
 
+        previousItemAttributes = itemAttributes;
         itemAttributes = readItemAttributes;
         LOGGER.info(LOADED_TIERS_MESSAGE, readItemAttributes.size());
     }
@@ -79,6 +81,10 @@ public class AttributeDataLoader extends JsonDataLoader implements SimpleSynchro
 
     public Map<Identifier, PotentialAttribute> getItemAttributes() {
         return itemAttributes;
+    }
+
+    public Map<Identifier, PotentialAttribute> getPreviousItemAttributes() {
+        return previousItemAttributes;
     }
 
     @Override

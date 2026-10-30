@@ -75,7 +75,7 @@ public class Tiered implements ModInitializer {
         ServerLifecycleEvents.END_DATA_PACK_RELOAD.register((server, serverResourceManager, success) -> {
             if (success) {
                 for (int i = 0; i < server.getPlayerManager().getPlayerList().size(); i++) {
-                    ModifierUtils.updateItemStackComponent(server.getPlayerManager().getPlayerList().get(i).getInventory());
+                    ModifierUtils.refreshPlayerTiers(server.getPlayerManager().getPlayerList().get(i));
                     TieredServerPacket.writeS2CReforgeItemSyncPacket(server.getPlayerManager().getPlayerList().get(i));
                     TieredServerPacket.writeS2CAttributePacket(server.getPlayerManager().getPlayerList().get(i));
                 }
@@ -105,11 +105,11 @@ public class Tiered implements ModInitializer {
     }
 
     public static boolean isPreferredEquipmentSlot(ItemStack stack, EquipmentSlot slot) {
-        if (stack.getItem() instanceof Equipment equipment) {
-            return equipment.getSlotType().equals(slot);
-        }
         if (stack.getItem() instanceof ShieldItem || stack.getItem() instanceof RangedWeaponItem || stack.isIn(TieredItemTags.MAIN_OFFHAND_ITEM)) {
             return slot == EquipmentSlot.MAINHAND || slot == EquipmentSlot.OFFHAND;
+        }
+        if (stack.getItem() instanceof Equipment equipment) {
+            return equipment.getSlotType().equals(slot);
         }
         return slot == EquipmentSlot.MAINHAND;
     }

@@ -2,9 +2,12 @@ package draylar.tiered.network;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import draylar.tiered.Tiered;
 import draylar.tiered.access.AnvilScreenHandlerAccess;
+import draylar.tiered.api.PotentialAttribute;
+import draylar.tiered.config.ConfigInit;
 import draylar.tiered.data.AttributeDataLoader;
 import draylar.tiered.network.packet.AttributePacket;
 import draylar.tiered.network.packet.HealthPacket;
@@ -71,7 +74,7 @@ public class TieredServerPacket {
     }
 
     public static void writeS2CReforgeReadyPacket(ServerPlayerEntity serverPlayerEntity, boolean disableButton) {
-        ServerPlayNetworking.send(serverPlayerEntity, new ReforgeReadyPacket(disableButton));
+        ServerPlayNetworking.send(serverPlayerEntity, new ReforgeReadyPacket(disableButton, ConfigInit.CONFIG.uniqueReforge));
     }
 
     public static void writeS2CReforgeItemSyncPacket(ServerPlayerEntity serverPlayerEntity) {
@@ -99,13 +102,26 @@ public class TieredServerPacket {
     public static void writeS2CAttributePacket(ServerPlayerEntity serverPlayerEntity) {
         List<String> attributeIds = new ArrayList<String>();
         List<String> attributeJsons = new ArrayList<String>();
+        boolean reset = true;
+        int packetLength = 0;
 
-        Tiered.ATTRIBUTE_DATA_LOADER.getItemAttributes().forEach((id, attribute) -> {
-            attributeIds.add(id.toString());
-            attributeJsons.add(AttributeDataLoader.GSON.toJson(attribute));
-        });
+        for (Map.Entry<Identifier, PotentialAttribute> entry : Tiered.ATTRIBUTE_DATA_LOADER.getItemAttributes().entrySet()) {
+            String id = entry.getKey().toString();
+            String json = AttributeDataLoader.GSON.toJson(entry.getValue());
+            int entryLength = id.length() + json.length();
+            if (!attributeIds.isEmpty() && packetLength + entryLength > AttributePacket.MAX_STRING_LENGTH) {
+                ServerPlayNetworking.send(serverPlayerEntity, new AttributePacket(reset, attributeIds, attributeJsons));
+                reset = false;
+                attributeIds = new ArrayList<String>();
+                attributeJsons = new ArrayList<String>();
+                packetLength = 0;
+            }
+            attributeIds.add(id);
+            attributeJsons.add(json);
+            packetLength += entryLength;
+        }
 
-        ServerPlayNetworking.send(serverPlayerEntity, new AttributePacket(attributeIds, attributeJsons));
+        ServerPlayNetworking.send(serverPlayerEntity, new AttributePacket(reset, attributeIds, attributeJsons));
     }
 
 }

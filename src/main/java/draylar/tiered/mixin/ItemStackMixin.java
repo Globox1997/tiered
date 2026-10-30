@@ -1,9 +1,7 @@
 package draylar.tiered.mixin;
 
 import draylar.tiered.Tiered;
-import draylar.tiered.api.AttributeTemplate;
 import draylar.tiered.api.ModifierUtils;
-import draylar.tiered.api.PotentialAttribute;
 import draylar.tiered.api.TierComponent;
 import draylar.tiered.config.ConfigInit;
 import net.minecraft.component.type.AttributeModifierSlot;
@@ -12,7 +10,6 @@ import net.minecraft.entity.attribute.EntityAttribute;
 import net.minecraft.entity.attribute.EntityAttributeModifier;
 import net.minecraft.item.ItemStack;
 import net.minecraft.registry.entry.RegistryEntry;
-import net.minecraft.util.Identifier;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.world.World;
 import org.jetbrains.annotations.Nullable;
@@ -22,10 +19,6 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Optional;
 import java.util.function.BiConsumer;
 
 @Mixin(ItemStack.class)
@@ -63,40 +56,6 @@ public abstract class ItemStackMixin {
     }
 
     private void applyAttributeModifier(@Nullable EquipmentSlot equipmentSlot, @Nullable AttributeModifierSlot attributeModifierSlot, BiConsumer<RegistryEntry<EntityAttribute>, EntityAttributeModifier> attributeModifierConsumer) {
-        ItemStack itemStack = (ItemStack) (Object) this;
-        if (itemStack.get(Tiered.TIER) != null) {
-            Identifier tier = ModifierUtils.getAttributeId(itemStack);
-            PotentialAttribute potentialAttribute = Tiered.ATTRIBUTE_DATA_LOADER.getItemAttributes().get(tier);
-            if (potentialAttribute != null) {
-                for (AttributeTemplate template : potentialAttribute.getAttributes()) {
-                    // get required equipment slots
-                    if (template.getRequiredEquipmentSlots() != null) {
-                        List<EquipmentSlot> requiredEquipmentSlots = new ArrayList<>(Arrays.asList(template.getRequiredEquipmentSlots()));
-
-                        if (equipmentSlot != null && requiredEquipmentSlots.contains(equipmentSlot)) {
-                            template.applyModifiers(equipmentSlot, attributeModifierConsumer);
-                        } else if (attributeModifierSlot != null) {
-                            Optional<EquipmentSlot> optional = Arrays.stream(template.getRequiredEquipmentSlots()).filter(attributeModifierSlot::matches).findFirst();
-                            if (optional.isPresent() && Tiered.isPreferredEquipmentSlot(itemStack, optional.get())) {
-                                template.applyModifiers(optional.get(), attributeModifierConsumer);
-                            }
-                        }
-                    }
-                    // get optional equipment slots
-                    if (template.getOptionalEquipmentSlots() != null) {
-                        List<EquipmentSlot> optionalEquipmentSlots = new ArrayList<>(Arrays.asList(template.getOptionalEquipmentSlots()));
-                        // optional equipment slots are valid ONLY IF the equipment slot is valid for the thing
-                        if (equipmentSlot != null && optionalEquipmentSlots.contains(equipmentSlot) && Tiered.isPreferredEquipmentSlot(itemStack, equipmentSlot)) {
-                            template.applyModifiers(equipmentSlot, attributeModifierConsumer);
-                        } else if (attributeModifierSlot != null && attributeModifierSlot != AttributeModifierSlot.ANY && attributeModifierSlot != AttributeModifierSlot.HAND) {
-                            Optional<EquipmentSlot> optional = Arrays.stream(template.getOptionalEquipmentSlots()).filter(attributeModifierSlot::matches).findFirst();
-                            if (optional.isPresent() && Tiered.isPreferredEquipmentSlot(itemStack, optional.get())) {
-                                template.applyModifiers(optional.get(), attributeModifierConsumer);
-                            }
-                        }
-                    }
-                }
-            }
-        }
+        ModifierUtils.applyTierModifiers(Tiered.ATTRIBUTE_DATA_LOADER.getItemAttributes(), (ItemStack) (Object) this, equipmentSlot, attributeModifierSlot, attributeModifierConsumer);
     }
 }
