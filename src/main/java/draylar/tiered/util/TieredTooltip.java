@@ -1,20 +1,49 @@
 package draylar.tiered.util;
 
 import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
 
+import org.jetbrains.annotations.Nullable;
 import org.joml.Vector2ic;
 
+import draylar.tiered.Tiered;
+import draylar.tiered.TieredClient;
 import draylar.tiered.api.BorderTemplate;
 import draylar.tiered.config.ConfigInit;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.minecraft.client.font.TextRenderer;
 import net.minecraft.client.gui.DrawContext;
+import net.minecraft.client.gui.tooltip.HoveredTooltipPositioner;
 import net.minecraft.client.gui.tooltip.TooltipComponent;
 import net.minecraft.client.gui.tooltip.TooltipPositioner;
+import net.minecraft.item.ItemStack;
+import net.minecraft.item.tooltip.TooltipData;
+import net.minecraft.text.Text;
 
 @Environment(EnvType.CLIENT)
 public class TieredTooltip {
+
+    @Nullable
+    public static BorderTemplate getBorderTemplate(ItemStack stack) {
+        if (!ConfigInit.CONFIG.tieredTooltip || stack.get(Tiered.TIER) == null) {
+            return null;
+        }
+        String tier = stack.get(Tiered.TIER).tier();
+        for (BorderTemplate borderTemplate : TieredClient.BORDER_TEMPLATES) {
+            if (borderTemplate.containsDecider(tier)) {
+                return borderTemplate;
+            }
+        }
+        return null;
+    }
+
+    public static void renderTieredTooltip(DrawContext context, TextRenderer textRenderer, List<Text> text, Optional<TooltipData> data, int x, int y, BorderTemplate borderTemplate) {
+        List<TooltipComponent> list = text.stream().map(Text::asOrderedText).map(TooltipComponent::of).collect(Collectors.toList());
+        data.ifPresent(tooltipData -> list.add(list.isEmpty() ? 0 : 1, TooltipComponent.of(tooltipData)));
+        renderTieredTooltipFromComponents(context, textRenderer, list, x, y, HoveredTooltipPositioner.INSTANCE, borderTemplate);
+    }
 
     public static void renderTieredTooltipFromComponents(DrawContext context, TextRenderer textRenderer, List<TooltipComponent> components, int x, int y, TooltipPositioner positioner,
             BorderTemplate borderTemplate) {

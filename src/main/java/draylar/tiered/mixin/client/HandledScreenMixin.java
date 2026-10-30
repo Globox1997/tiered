@@ -1,26 +1,25 @@
 package draylar.tiered.mixin.client;
 
 import java.util.List;
-import java.util.stream.Collectors;
+import java.util.Optional;
 
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
-import org.spongepowered.asm.mixin.injection.Inject;
-import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
-import org.spongepowered.asm.mixin.injection.callback.LocalCapture;
 
-import draylar.tiered.Tiered;
-import draylar.tiered.TieredClient;
-import draylar.tiered.config.ConfigInit;
+import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
+import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
+import com.llamalad7.mixinextras.sugar.Local;
+
+import draylar.tiered.api.BorderTemplate;
 import draylar.tiered.util.TieredTooltip;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
+import net.minecraft.client.font.TextRenderer;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.screen.ingame.HandledScreen;
-import net.minecraft.client.gui.tooltip.HoveredTooltipPositioner;
-import net.minecraft.client.gui.tooltip.TooltipComponent;
 import net.minecraft.item.ItemStack;
+import net.minecraft.item.tooltip.TooltipData;
 import net.minecraft.text.Text;
 
 @Environment(EnvType.CLIENT)
@@ -31,23 +30,13 @@ public abstract class HandledScreenMixin extends Screen {
         super(title);
     }
 
-    @Inject(method = "drawMouseoverTooltip", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/DrawContext;drawTooltip(Lnet/minecraft/client/font/TextRenderer;Ljava/util/List;Ljava/util/Optional;II)V"), cancellable = true, locals = LocalCapture.CAPTURE_FAILSOFT)
-    protected void drawMouseoverTooltipMixin(DrawContext context, int x, int y, CallbackInfo info, ItemStack stack) {
-        if (ConfigInit.CONFIG.tieredTooltip && stack.get(Tiered.TIER) != null) {
-            String tier = stack.get(Tiered.TIER).tier();
-            for (int i = 0; i < TieredClient.BORDER_TEMPLATES.size(); i++) {
-                if (TieredClient.BORDER_TEMPLATES.get(i).containsDecider(tier)) {
-                    List<Text> text = Screen.getTooltipFromItem(client, stack);
-
-                    List<TooltipComponent> list = text.stream().map(Text::asOrderedText).map(TooltipComponent::of).collect(Collectors.toList());
-                    stack.getTooltipData().ifPresent(data -> list.add(1, TooltipComponent.of(data)));
-
-                    TieredTooltip.renderTieredTooltipFromComponents(context, this.textRenderer, list, x, y, HoveredTooltipPositioner.INSTANCE, TieredClient.BORDER_TEMPLATES.get(i));
-
-                    info.cancel();
-                    break;
-                }
-            }
+    @WrapOperation(method = "drawMouseoverTooltip", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/DrawContext;drawTooltip(Lnet/minecraft/client/font/TextRenderer;Ljava/util/List;Ljava/util/Optional;II)V"))
+    protected void drawMouseoverTooltipMixin(DrawContext context, TextRenderer textRenderer, List<Text> text, Optional<TooltipData> data, int x, int y, Operation<Void> original, @Local ItemStack stack) {
+        BorderTemplate borderTemplate = TieredTooltip.getBorderTemplate(stack);
+        if (borderTemplate != null) {
+            TieredTooltip.renderTieredTooltip(context, textRenderer, text, data, x, y, borderTemplate);
+        } else {
+            original.call(context, textRenderer, text, data, x, y);
         }
     }
 
