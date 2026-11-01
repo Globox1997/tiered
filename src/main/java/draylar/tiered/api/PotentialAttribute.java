@@ -2,7 +2,7 @@ package draylar.tiered.api;
 
 import java.util.List;
 import net.minecraft.network.chat.Style;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 
 public class PotentialAttribute {
 
@@ -32,7 +32,7 @@ public class PotentialAttribute {
         return weight;
     }
 
-    public boolean isValid(ResourceLocation id) {
+    public boolean isValid(Identifier id) {
         for (ItemVerifier verifier : verifiers) {
             if (verifier.isValid(id))
                 return true;

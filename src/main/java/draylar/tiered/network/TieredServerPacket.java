@@ -22,7 +22,7 @@ import net.libz.network.LibzServerPacket;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.SimpleMenuProvider;
 import net.minecraft.world.inventory.AnvilMenu;
@@ -31,12 +31,12 @@ import net.minecraft.world.inventory.ContainerLevelAccess;
 public class TieredServerPacket {
 
     public static void init() {
-        PayloadTypeRegistry.playS2C().register(AttributePacket.PACKET_ID, AttributePacket.PACKET_CODEC);
-        PayloadTypeRegistry.playS2C().register(HealthPacket.PACKET_ID, HealthPacket.PACKET_CODEC);
-        PayloadTypeRegistry.playC2S().register(ReforgePacket.PACKET_ID, ReforgePacket.PACKET_CODEC);
-        PayloadTypeRegistry.playS2C().register(ReforgeReadyPacket.PACKET_ID, ReforgeReadyPacket.PACKET_CODEC);
-        PayloadTypeRegistry.playS2C().register(ReforgeItemSyncPacket.PACKET_ID, ReforgeItemSyncPacket.PACKET_CODEC);
-        PayloadTypeRegistry.playC2S().register(ReforgeScreenPacket.PACKET_ID, ReforgeScreenPacket.PACKET_CODEC);
+        PayloadTypeRegistry.clientboundPlay().register(AttributePacket.PACKET_ID, AttributePacket.PACKET_CODEC);
+        PayloadTypeRegistry.clientboundPlay().register(HealthPacket.PACKET_ID, HealthPacket.PACKET_CODEC);
+        PayloadTypeRegistry.serverboundPlay().register(ReforgePacket.PACKET_ID, ReforgePacket.PACKET_CODEC);
+        PayloadTypeRegistry.clientboundPlay().register(ReforgeReadyPacket.PACKET_ID, ReforgeReadyPacket.PACKET_CODEC);
+        PayloadTypeRegistry.clientboundPlay().register(ReforgeItemSyncPacket.PACKET_ID, ReforgeItemSyncPacket.PACKET_CODEC);
+        PayloadTypeRegistry.serverboundPlay().register(ReforgeScreenPacket.PACKET_ID, ReforgeScreenPacket.PACKET_CODEC);
 
         ServerPlayNetworking.registerGlobalReceiver(ReforgeScreenPacket.PACKET_ID, (payload, context) -> {
             int mouseX = payload.mouseX();
@@ -78,7 +78,7 @@ public class TieredServerPacket {
     }
 
     public static void writeS2CReforgeItemSyncPacket(ServerPlayer serverPlayerEntity) {
-        List<ResourceLocation> ids = new ArrayList<ResourceLocation>();
+        List<Identifier> ids = new ArrayList<Identifier>();
         List<Integer> listSize = new ArrayList<Integer>();
         List<Integer> itemIds = new ArrayList<Integer>();
 
@@ -86,7 +86,7 @@ public class TieredServerPacket {
             ids.add(id);
 
             List<Integer> list = new ArrayList<Integer>();
-            Tiered.REFORGE_DATA_LOADER.getReforgeBaseItems(BuiltInRegistries.ITEM.get(id)).forEach(item -> {
+            Tiered.REFORGE_DATA_LOADER.getReforgeBaseItems(BuiltInRegistries.ITEM.getValue(id)).forEach(item -> {
                 list.add(BuiltInRegistries.ITEM.getId(item));
             });
             listSize.add(list.size());
@@ -105,7 +105,7 @@ public class TieredServerPacket {
         boolean reset = true;
         int packetLength = 0;
 
-        for (Map.Entry<ResourceLocation, PotentialAttribute> entry : Tiered.ATTRIBUTE_DATA_LOADER.getItemAttributes().entrySet()) {
+        for (Map.Entry<Identifier, PotentialAttribute> entry : Tiered.ATTRIBUTE_DATA_LOADER.getItemAttributes().entrySet()) {
             String id = entry.getKey().toString();
             String json = AttributeDataLoader.GSON.toJson(entry.getValue());
             int entryLength = id.length() + json.length();

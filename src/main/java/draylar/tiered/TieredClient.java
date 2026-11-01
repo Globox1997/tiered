@@ -16,7 +16,7 @@ import net.libz.registry.TabRegistry;
 import net.minecraft.client.gui.screens.MenuScreens;
 import net.minecraft.client.gui.screens.inventory.AnvilScreen;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.packs.PackType;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -27,12 +27,12 @@ import java.util.Map;
 public class TieredClient implements ClientModInitializer {
 
     // map for storing attributes before logging into a server
-    public static final Map<ResourceLocation, PotentialAttribute> CACHED_ATTRIBUTES = new HashMap<>();
+    public static final Map<Identifier, PotentialAttribute> CACHED_ATTRIBUTES = new HashMap<>();
 
     public static final List<BorderTemplate> BORDER_TEMPLATES = new ArrayList<BorderTemplate>();
 
-    private static final ResourceLocation ANVIL_TAB_ICON = ResourceLocation.parse("tiered:textures/gui/anvil_tab_icon.png");
-    private static final ResourceLocation REFORGE_TAB_ICON = ResourceLocation.parse("tiered:textures/gui/reforge_tab_icon.png");
+    private static final Identifier ANVIL_TAB_ICON = Identifier.parse("tiered:textures/gui/anvil_tab_icon.png");
+    private static final Identifier REFORGE_TAB_ICON = Identifier.parse("tiered:textures/gui/reforge_tab_icon.png");
 
     @Override
     public void onInitializeClient() {

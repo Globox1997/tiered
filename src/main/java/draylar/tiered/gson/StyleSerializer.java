@@ -4,6 +4,7 @@ import com.google.gson.*;
 import org.jetbrains.annotations.Nullable;
 
 import java.lang.reflect.Type;
+import net.minecraft.network.chat.FontDescription;
 import net.minecraft.network.chat.Style;
 
 public class StyleSerializer implements JsonSerializer<Style> {
@@ -36,8 +37,8 @@ public class StyleSerializer implements JsonSerializer<Style> {
         if (style.getInsertion() != null) {
             jsonObject.add("insertion", jsonSerializationContext.serialize(style.getInsertion()));
         }
-        if (style.getFont() != null) {
-            jsonObject.addProperty("font", style.getFont().toString());
+        if (style.getFont() instanceof FontDescription.Resource font) {
+            jsonObject.addProperty("font", font.id().toString());
         }
         return jsonObject;
     }

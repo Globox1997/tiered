@@ -6,10 +6,11 @@ import org.jetbrains.annotations.Nullable;
 
 import java.lang.reflect.Type;
 import java.util.Optional;
-import net.minecraft.ResourceLocationException;
+import net.minecraft.IdentifierException;
+import net.minecraft.network.chat.FontDescription;
 import net.minecraft.network.chat.Style;
 import net.minecraft.network.chat.TextColor;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.util.GsonHelper;
 
 public class StyleDeserializer implements JsonDeserializer<Style> {
@@ -37,12 +38,12 @@ public class StyleDeserializer implements JsonDeserializer<Style> {
     }
 
     @Nullable
-    private static ResourceLocation getFont(JsonObject root) {
+    private static FontDescription getFont(JsonObject root) {
         if (root.has("font")) {
             String string = GsonHelper.getAsString(root, "font");
             try {
-                return ResourceLocation.parse(string);
-            } catch (ResourceLocationException invalidIdentifierException) {
+                return new FontDescription.Resource(Identifier.parse(string));
+            } catch (IdentifierException invalidIdentifierException) {
                 throw new JsonSyntaxException("Invalid font name: " + string);
             }
         }
@@ -64,8 +65,8 @@ public class StyleDeserializer implements JsonDeserializer<Style> {
             Boolean obfuscated = parseNullableBoolean(jsonObject, "obfuscated");
             TextColor textColor = parseColor(jsonObject);
             String insertion = parseInsertion(jsonObject);
-            ResourceLocation font = getFont(jsonObject);
-            return StyleAccessor.invokeOf(Optional.ofNullable(textColor), Optional.ofNullable(bold), Optional.ofNullable(italic), Optional.ofNullable(underlined), Optional.ofNullable(strikethrough),
+            FontDescription font = getFont(jsonObject);
+            return StyleAccessor.invokeOf(Optional.ofNullable(textColor), Optional.empty(), Optional.ofNullable(bold), Optional.ofNullable(italic), Optional.ofNullable(underlined), Optional.ofNullable(strikethrough),
                     Optional.ofNullable(obfuscated), Optional.empty(), Optional.empty(), Optional.ofNullable(insertion), Optional.ofNullable(font));
         }
         return null;

@@ -14,7 +14,7 @@ import net.minecraft.commands.Commands;
 import net.minecraft.commands.arguments.EntityArgument;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.item.ItemStack;
 
@@ -24,9 +24,7 @@ public class CommandInit {
 
     public static void init() {
         CommandRegistrationCallback.EVENT.register((dispatcher, dedicated, environment) -> {
-            dispatcher.register((Commands.literal("tiered").requires((serverCommandSource) -> {
-                return serverCommandSource.hasPermission(3);
-            })).then(Commands.literal("tier").then(Commands.argument("targets", EntityArgument.players()).then(Commands.literal("common").executes((commandContext) -> {
+            dispatcher.register((Commands.literal("tiered").requires(Commands.hasPermission(Commands.LEVEL_ADMINS))).then(Commands.literal("tier").then(Commands.argument("targets", EntityArgument.players()).then(Commands.literal("common").executes((commandContext) -> {
                 return executeCommand(commandContext.getSource(), EntityArgument.getPlayers(commandContext, "targets"), 0);
             })).then(Commands.literal("uncommon").executes((commandContext) -> {
                 return executeCommand(commandContext.getSource(), EntityArgument.getPlayers(commandContext, "targets"), 1);
@@ -65,10 +63,10 @@ public class CommandInit {
                     source.sendFailure(Component.translatable("commands.tiered.untier_failed", itemStack.getItem().getName(itemStack), serverPlayerEntity.getDisplayName()));
                 }
             } else {
-                ArrayList<ResourceLocation> potentialAttributes = new ArrayList<ResourceLocation>();
+                ArrayList<Identifier> potentialAttributes = new ArrayList<Identifier>();
                 Tiered.ATTRIBUTE_DATA_LOADER.getItemAttributes().forEach((id, attribute) -> {
                     if (attribute.isValid(BuiltInRegistries.ITEM.getKey(itemStack.getItem()))) {
-                        potentialAttributes.add(ResourceLocation.parse(attribute.getID()));
+                        potentialAttributes.add(Identifier.parse(attribute.getID()));
                     }
                 });
                 if (potentialAttributes.size() <= 0) {
@@ -76,8 +74,8 @@ public class CommandInit {
                     continue;
                 } else {
 
-                    List<ResourceLocation> potentialTier = new ArrayList<ResourceLocation>();
-                    for (ResourceLocation potentialAttribute : potentialAttributes) {
+                    List<Identifier> potentialTier = new ArrayList<Identifier>();
+                    for (Identifier potentialAttribute : potentialAttributes) {
                         if (potentialAttribute.getPath().contains(TIER_LIST.get(tier))) {
                             if (TIER_LIST.get(tier).equals("common") && potentialAttribute.getPath().contains("uncommon")) {
                                 continue;
@@ -93,12 +91,12 @@ public class CommandInit {
 
                         ModifierUtils.removeItemStackAttribute(itemStack);
 
-                        ResourceLocation attribute = potentialTier.get(serverPlayerEntity.level().getRandom().nextInt(potentialTier.size()));
+                        Identifier attribute = potentialTier.get(serverPlayerEntity.level().getRandom().nextInt(potentialTier.size()));
                         if (attribute != null) {
                             // add durability nbt
                             float durableFactor = -1f;
                             int operation = 0;
-                            List<AttributeTemplate> attributeList = Tiered.ATTRIBUTE_DATA_LOADER.getItemAttributes().get(ResourceLocation.parse(attribute.toString())).getAttributes();
+                            List<AttributeTemplate> attributeList = Tiered.ATTRIBUTE_DATA_LOADER.getItemAttributes().get(Identifier.parse(attribute.toString())).getAttributes();
                             for (AttributeTemplate attributeTemplate : attributeList) {
                                 if (attributeTemplate.getAttributeTypeID().equals("tiered:generic.durable")) {
                                     durableFactor = (float) Math.round(attributeTemplate.getEntityAttributeModifier().amount() * 100.0f) / 100.0f;

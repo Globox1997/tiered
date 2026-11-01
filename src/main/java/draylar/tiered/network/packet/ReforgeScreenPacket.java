@@ -3,11 +3,11 @@ package draylar.tiered.network.packet;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 
 public record ReforgeScreenPacket(int mouseX, int mouseY, boolean reforgingScreen) implements CustomPacketPayload {
 
-    public static final CustomPacketPayload.Type<ReforgeScreenPacket> PACKET_ID = new CustomPacketPayload.Type<>(ResourceLocation.fromNamespaceAndPath("tiered", "reforge_screen_packet"));
+    public static final CustomPacketPayload.Type<ReforgeScreenPacket> PACKET_ID = new CustomPacketPayload.Type<>(Identifier.fromNamespaceAndPath("tiered", "reforge_screen_packet"));
 
     public static final StreamCodec<RegistryFriendlyByteBuf, ReforgeScreenPacket> PACKET_CODEC = StreamCodec.ofMember((value, buf) -> {
         buf.writeInt(value.mouseX);

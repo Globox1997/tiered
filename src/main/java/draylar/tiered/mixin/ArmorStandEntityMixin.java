@@ -7,23 +7,25 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 import draylar.tiered.api.ModifierUtils;
 import draylar.tiered.config.ConfigInit;
-import net.minecraft.nbt.CompoundTag;
+import com.mojang.serialization.Codec;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.decoration.ArmorStand;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.storage.ValueInput;
+import net.minecraft.world.level.storage.ValueOutput;
 
 @Mixin(ArmorStand.class)
 public abstract class ArmorStandEntityMixin {
 
     @Inject(method = "addAdditionalSaveData", at = @At("TAIL"))
-    private void writeCustomDataToNbtMixin(CompoundTag nbt, CallbackInfo info) {
+    private void writeCustomDataToNbtMixin(ValueOutput nbt, CallbackInfo info) {
         nbt.putBoolean("TieredChecked", true);
     }
 
     @Inject(method = "readAdditionalSaveData", at = @At("TAIL"))
-    private void readCustomDataFromNbtMixin(CompoundTag nbt, CallbackInfo info) {
+    private void readCustomDataFromNbtMixin(ValueInput nbt, CallbackInfo info) {
         ArmorStand armorStand = (ArmorStand) (Object) this;
-        if (nbt.getBoolean("TieredChecked") || nbt.contains("IsGenerated") || armorStand.level().isClientSide() || !ConfigInit.CONFIG.entityItemModifier) {
+        if (nbt.getBooleanOr("TieredChecked", false) || nbt.read("IsGenerated", Codec.BOOL).isPresent() || armorStand.level().isClientSide() || !ConfigInit.CONFIG.entityItemModifier) {
             return;
         }
         for (EquipmentSlot equipmentSlot : EquipmentSlot.values()) {

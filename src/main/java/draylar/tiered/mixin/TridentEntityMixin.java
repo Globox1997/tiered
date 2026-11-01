@@ -7,8 +7,8 @@ import org.spongepowered.asm.mixin.injection.ModifyVariable;
 import draylar.tiered.util.AttributeHelper;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.EntityType;
-import net.minecraft.world.entity.projectile.AbstractArrow;
-import net.minecraft.world.entity.projectile.ThrownTrident;
+import net.minecraft.world.entity.projectile.arrow.AbstractArrow;
+import net.minecraft.world.entity.projectile.arrow.ThrownTrident;
 import net.minecraft.world.level.Level;
 
 @Mixin(ThrownTrident.class)

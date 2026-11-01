@@ -1,21 +1,18 @@
 package draylar.tiered.network.packet;
 
 import java.util.List;
-import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 
-public record ReforgeItemSyncPacket(List<ResourceLocation> ids, List<Integer> listSize, List<Integer> itemIds) implements CustomPacketPayload {
+public record ReforgeItemSyncPacket(List<Identifier> ids, List<Integer> listSize, List<Integer> itemIds) implements CustomPacketPayload {
 
-    public static final CustomPacketPayload.Type<ReforgeItemSyncPacket> PACKET_ID = new CustomPacketPayload.Type<>(ResourceLocation.fromNamespaceAndPath("tiered", "reforge_item_sync_packet"));
+    public static final CustomPacketPayload.Type<ReforgeItemSyncPacket> PACKET_ID = new CustomPacketPayload.Type<>(Identifier.fromNamespaceAndPath("tiered", "reforge_item_sync_packet"));
 
-    public static final StreamCodec<RegistryFriendlyByteBuf, ReforgeItemSyncPacket> PACKET_CODEC = StreamCodec.ofMember((value, buf) -> {
-        buf.writeCollection(value.ids, FriendlyByteBuf::writeResourceLocation);
-        buf.writeCollection(value.listSize, FriendlyByteBuf::writeInt);
-        buf.writeCollection(value.itemIds, FriendlyByteBuf::writeInt);
-    }, buf -> new ReforgeItemSyncPacket(buf.readList(FriendlyByteBuf::readResourceLocation), buf.readList(FriendlyByteBuf::readInt), buf.readList(FriendlyByteBuf::readInt)));
+    public static final StreamCodec<RegistryFriendlyByteBuf, ReforgeItemSyncPacket> PACKET_CODEC = StreamCodec.composite(Identifier.STREAM_CODEC.apply(ByteBufCodecs.list()), ReforgeItemSyncPacket::ids,
+            ByteBufCodecs.INT.apply(ByteBufCodecs.list()), ReforgeItemSyncPacket::listSize, ByteBufCodecs.INT.apply(ByteBufCodecs.list()), ReforgeItemSyncPacket::itemIds, ReforgeItemSyncPacket::new);
 
     @Override
     public Type<? extends CustomPacketPayload> type() {

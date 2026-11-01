@@ -2,13 +2,10 @@ package draylar.tiered.api;
 
 import draylar.tiered.Tiered;
 import draylar.tiered.config.ConfigInit;
-import net.levelz.access.LevelManagerAccess;
-import net.levelz.level.LevelManager;
-import net.levelz.level.Skill;
 import net.libz.util.SortList;
 import net.minecraft.core.Holder;
 import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.EquipmentSlotGroup;
@@ -33,22 +30,22 @@ import org.jetbrains.annotations.Nullable;
 public class ModifierUtils {
 
     /**
-     * Returns the ID of a random attribute that is valid for the given {@link Item} in {@link ResourceLocation} form.
+     * Returns the ID of a random attribute that is valid for the given {@link Item} in {@link Identifier} form.
      * <p>
      * If there is no valid attribute for the given {@link Item}, null is returned.
      *
      * @param item {@link Item} to generate a random attribute for
-     * @return id of random attribute for item in {@link ResourceLocation} form, or null if there are no valid options
+     * @return id of random attribute for item in {@link Identifier} form, or null if there are no valid options
      */
     @Nullable
-    public static ResourceLocation getRandomAttributeIDFor(@Nullable Player playerEntity, Item item, boolean reforge) {
-        List<ResourceLocation> potentialAttributes = new ArrayList<>();
+    public static Identifier getRandomAttributeIDFor(@Nullable Player playerEntity, Item item, boolean reforge) {
+        List<Identifier> potentialAttributes = new ArrayList<>();
         List<Integer> attributeWeights = new ArrayList<>();
         // collect all valid attributes for the given item and their weights
 
         Tiered.ATTRIBUTE_DATA_LOADER.getItemAttributes().forEach((id, attribute) -> {
             if (attribute.isValid(BuiltInRegistries.ITEM.getKey(item)) && (attribute.getWeight() > 0 || reforge)) {
-                potentialAttributes.add(ResourceLocation.parse(attribute.getID()));
+                potentialAttributes.add(Identifier.parse(attribute.getID()));
                 attributeWeights.add(reforge ? Math.max(1, attribute.getWeight() + 1) : attribute.getWeight());
             }
         });
@@ -64,23 +61,6 @@ public class ModifierUtils {
                     attributeWeights.set(i, Math.max(1, (int) (attributeWeights.get(i) * Math.max(0.0f, ConfigInit.CONFIG.reforgeModifier))));
                 }
             }
-        }
-        // LevelZ
-        if (Tiered.isLevelZLoaded && playerEntity != null) {
-            LevelManager.SKILLS.values().stream().filter(skill -> skill.getKey().equals("smithing"));
-            for (Skill skill : LevelManager.SKILLS.values()) {
-                if (skill.getKey().equals("smithing")) {
-                    int newMaxWeight = Collections.max(attributeWeights);
-                    for (int i = 0; i < attributeWeights.size(); i++) {
-                        if (attributeWeights.get(i) > newMaxWeight / 3) {
-                            attributeWeights.set(i, Math.max(1, (int) (attributeWeights.get(i)
-                                    * Math.max(0.0f, 1.0f - ConfigInit.CONFIG.levelzReforgeModifier * ((LevelManagerAccess) playerEntity).getLevelManager().getSkillLevel(skill.getId())))));
-                        }
-                    }
-                    break;
-                }
-            }
-
         }
         // Luck
         if (playerEntity != null) {
@@ -118,14 +98,14 @@ public class ModifierUtils {
     public static void setItemStackAttribute(@Nullable Player playerEntity, ItemStack stack, boolean reforge) {
         if (stack.get(Tiered.TIER) == null && !stack.is(TieredItemTags.MODIFIER_RESTRICTED)) {
             // attempt to get a random tier
-            ResourceLocation potentialAttributeID = ModifierUtils.getRandomAttributeIDFor(playerEntity, stack.getItem(), reforge);
+            Identifier potentialAttributeID = ModifierUtils.getRandomAttributeIDFor(playerEntity, stack.getItem(), reforge);
             // found an ID
             if (potentialAttributeID != null) {
 
                 // add durability nbt
                 float durableFactor = -1f;
                 int operation = 0;
-                List<AttributeTemplate> attributeList = Tiered.ATTRIBUTE_DATA_LOADER.getItemAttributes().get(ResourceLocation.parse(potentialAttributeID.toString())).getAttributes();
+                List<AttributeTemplate> attributeList = Tiered.ATTRIBUTE_DATA_LOADER.getItemAttributes().get(Identifier.parse(potentialAttributeID.toString())).getAttributes();
                 for (AttributeTemplate attributeTemplate : attributeList) {
                     if (attributeTemplate.getAttributeTypeID().equals("tiered:generic.durable")) {
                         durableFactor = (float) Math.round(attributeTemplate.getEntityAttributeModifier().amount() * 100.0f) / 100.0f;
@@ -145,14 +125,14 @@ public class ModifierUtils {
     }
 
     @Nullable
-    public static ResourceLocation getAttributeId(ItemStack itemStack) {
+    public static Identifier getAttributeId(ItemStack itemStack) {
         if (itemStack.get(Tiered.TIER) != null) {
-            return ResourceLocation.tryParse(itemStack.get(Tiered.TIER).tier());
+            return Identifier.tryParse(itemStack.get(Tiered.TIER).tier());
         }
         return null;
     }
 
-    public static void applyTierModifiers(Map<ResourceLocation, PotentialAttribute> itemAttributes, ItemStack itemStack, @Nullable EquipmentSlot equipmentSlot, @Nullable EquipmentSlotGroup attributeModifierSlot,
+    public static void applyTierModifiers(Map<Identifier, PotentialAttribute> itemAttributes, ItemStack itemStack, @Nullable EquipmentSlot equipmentSlot, @Nullable EquipmentSlotGroup attributeModifierSlot,
             BiConsumer<Holder<Attribute>, AttributeModifier> attributeModifierConsumer) {
         if (itemStack.get(Tiered.TIER) == null) {
             return;
@@ -215,14 +195,14 @@ public class ModifierUtils {
             if (!itemStack.isEmpty() && itemStack.get(Tiered.TIER) != null) {
 
                 // Check if attribute exists
-                List<ResourceLocation> attributeIds = new ArrayList<>();
+                List<Identifier> attributeIds = new ArrayList<>();
                 Tiered.ATTRIBUTE_DATA_LOADER.getItemAttributes().forEach((id, attribute) -> {
                     if (attribute.isValid(BuiltInRegistries.ITEM.getKey(itemStack.getItem()))) {
                         attributeIds.add(id);
                     }
                 });
-                ResourceLocation currentId = getAttributeId(itemStack);
-                ResourceLocation attributeID = null;
+                Identifier currentId = getAttributeId(itemStack);
+                Identifier attributeID = null;
                 if (currentId != null && attributeIds.contains(currentId)) {
                     attributeID = currentId;
                 } else if (!attributeIds.isEmpty()) {
@@ -238,7 +218,7 @@ public class ModifierUtils {
                     // update durability nbt
                     float durableFactor = -1f;
                     int operation = 0;
-                    List<AttributeTemplate> attributeList = Tiered.ATTRIBUTE_DATA_LOADER.getItemAttributes().get(ResourceLocation.parse(attributeID.toString())).getAttributes();
+                    List<AttributeTemplate> attributeList = Tiered.ATTRIBUTE_DATA_LOADER.getItemAttributes().get(Identifier.parse(attributeID.toString())).getAttributes();
                     for (int i = 0; i < attributeList.size(); i++) {
                         if (attributeList.get(i).getAttributeTypeID().equals("tiered:generic.durable")) {
                             durableFactor = (float) Math.round(attributeList.get(i).getEntityAttributeModifier().amount() * 100.0f) / 100.0f;

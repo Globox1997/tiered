@@ -7,10 +7,14 @@ import draylar.tiered.api.TieredItemTags;
 import draylar.tiered.config.ConfigInit;
 import draylar.tiered.network.TieredServerPacket;
 
+import org.jetbrains.annotations.Nullable;
+
 import java.util.List;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.tags.BlockTags;
+import net.minecraft.tags.ItemTags;
 import net.minecraft.world.Container;
 import net.minecraft.world.SimpleContainer;
 import net.minecraft.world.entity.player.Inventory;
@@ -18,10 +22,9 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.inventory.ContainerLevelAccess;
 import net.minecraft.world.inventory.Slot;
-import net.minecraft.world.item.ArmorItem;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.TieredItem;
+import net.minecraft.world.item.enchantment.Repairable;
 import net.minecraft.world.level.block.LevelEvent;
 
 public class ReforgeScreenHandler extends AbstractContainerMenu {
@@ -91,10 +94,8 @@ public class ReforgeScreenHandler extends AbstractContainerMenu {
                 ItemStack baseItem = this.getSlot(0).getItem();
                 if (!items.isEmpty()) {
                     ready = items.stream().anyMatch(it -> it == baseItem.getItem());
-                } else if (item instanceof TieredItem toolItem) {
-                    ready = toolItem.getTier().getRepairIngredient().test(baseItem);
-                } else if (item instanceof ArmorItem armorItem && armorItem.getMaterial().value().repairIngredient() != null) {
-                    ready = armorItem.getMaterial().value().repairIngredient().get().test(baseItem);
+                } else if (getRepairable(stack) != null) {
+                    ready = getRepairable(stack).isValidRepairItem(baseItem);
                 } else {
                     ready = baseItem.is(TieredItemTags.REFORGE_BASE_ITEM);
                 }
@@ -144,11 +145,8 @@ public class ReforgeScreenHandler extends AbstractContainerMenu {
                 }
                 if (this.getSlot(1).hasItem()) {
                     Item item = this.getSlot(1).getItem().getItem();
-                    if (item instanceof TieredItem toolItem && toolItem.getTier().getRepairIngredient().test(itemStack) && !this.moveItemStackTo(itemStack2, 0, 1, false)) {
-                        return ItemStack.EMPTY;
-                    }
-                    if (item instanceof ArmorItem armorItem && armorItem.getMaterial().value().repairIngredient() != null && armorItem.getMaterial().value().repairIngredient().get().test(itemStack)
-                            && !this.moveItemStackTo(itemStack2, 0, 1, false)) {
+                    Repairable repairable = getRepairable(this.getSlot(1).getItem());
+                    if (repairable != null && repairable.isValidRepairItem(itemStack) && !this.moveItemStackTo(itemStack2, 0, 1, false)) {
                         return ItemStack.EMPTY;
                     }
                     if (itemStack.is(TieredItemTags.REFORGE_BASE_ITEM) && !this.moveItemStackTo(itemStack2, 0, 1, false)) {
@@ -194,6 +192,15 @@ public class ReforgeScreenHandler extends AbstractContainerMenu {
         this.decrementStack(0);
         this.decrementStack(2);
         this.context.execute((world, pos) -> world.levelEvent(LevelEvent.SOUND_ANVIL_USED, (BlockPos) pos, 0));
+    }
+
+    @Nullable
+    public static Repairable getRepairable(ItemStack stack) {
+        if (stack.is(ItemTags.SWORDS) || stack.is(ItemTags.PICKAXES) || stack.is(ItemTags.AXES) || stack.is(ItemTags.SHOVELS) || stack.is(ItemTags.HOES) || stack.is(ItemTags.HEAD_ARMOR)
+                || stack.is(ItemTags.CHEST_ARMOR) || stack.is(ItemTags.LEG_ARMOR) || stack.is(ItemTags.FOOT_ARMOR)) {
+            return stack.get(DataComponents.REPAIRABLE);
+        }
+        return null;
     }
 
     public void setPos(BlockPos pos) {

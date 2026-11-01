@@ -1,5 +1,5 @@
 plugins {
-	id 'fabric-loom' version '1.17-SNAPSHOT'
+	id 'net.fabricmc.fabric-loom' version "${loom_version}"
 	id 'maven-publish'
 }
 
@@ -12,6 +12,7 @@ base {
 
 
 repositories {
+	mavenLocal()
 	maven { url 'https://jitpack.io' }
 	maven { url "https://maven.shedaniel.me/" }
     maven { url "https://maven.terraformersmc.com/" }
@@ -24,26 +25,21 @@ repositories {
 dependencies {
 	// To change the versions see the gradle.properties file
 	minecraft "com.mojang:minecraft:${project.minecraft_version}"
-	mappings loom.officialMojangMappings()
-	modImplementation "net.fabricmc:fabric-loader:${project.loader_version}"
+	implementation "net.fabricmc:fabric-loader:${project.loader_version}"
 
 	// Fabric API. This is technically optional, but you probably want it anyway.
-	modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
+	implementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
 
 	// ModMenu
-    modCompileOnly modRuntimeOnly("com.terraformersmc:modmenu:${project.mod_menu_version}") {
+    compileOnly localRuntime("com.terraformersmc:modmenu:${project.mod_menu_version}") {
         exclude(group: "net.fabricmc.fabric-api")
     }
 	// Config
-	modImplementation ("me.shedaniel.cloth:cloth-config-fabric:${project.cloth_config_version}") {
+	implementation ("me.shedaniel.cloth:cloth-config-fabric:${project.cloth_config_version}") {
     	exclude(group: "net.fabricmc.fabric-api")
   	}
     // LibZ
-    modImplementation ('maven.modrinth:libz:1.0.3+1.21.1') {
-		exclude(group: "net.fabricmc.fabric-api")
-	}
-    // LevelZ
-    modCompileOnly ('maven.modrinth:levelz:2.0.0+1.21.1') {
+    implementation ("net.libz:libz-fabric:${project.libz_version}") {
 		exclude(group: "net.fabricmc.fabric-api")
 	}
 	// // TooltipFix
@@ -51,7 +47,7 @@ dependencies {
     // 	exclude(group: "net.fabricmc.fabric-api")
   	// }
 	// EasyAnvils
-	modCompileOnly ("curse.maven:easy-anvils-682567:4556543") {
+	compileOnly ("maven.modrinth:easy-anvils:${project.easy_anvils_version}") {
     	exclude(group: "net.fabricmc.fabric-api")
   	}
 }
@@ -65,7 +61,7 @@ processResources {
 }
 
 tasks.withType(JavaCompile).configureEach {
-	it.options.release = 21
+	it.options.release = Integer.parseInt(project.java_version)
 }
 
 java {
@@ -74,8 +70,7 @@ java {
 	// If you remove this line, sources will not be generated.
 	withSourcesJar()
 	
-	sourceCompatibility = JavaVersion.VERSION_21
-	targetCompatibility = JavaVersion.VERSION_21
+	toolchain.languageVersion = JavaLanguageVersion.of(project.java_version)
 }
 
 jar {

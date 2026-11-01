@@ -8,12 +8,13 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 import draylar.tiered.api.ModifierUtils;
 import draylar.tiered.config.ConfigInit;
-import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.decoration.HangingEntity;
 import net.minecraft.world.entity.decoration.ItemFrame;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.storage.ValueInput;
+import net.minecraft.world.level.storage.ValueOutput;
 
 @Mixin(ItemFrame.class)
 public abstract class ItemFrameEntityMixin extends HangingEntity {
@@ -26,12 +27,12 @@ public abstract class ItemFrameEntityMixin extends HangingEntity {
     private boolean tieredChecked = false;
 
     @Inject(method = "readAdditionalSaveData", at = @At("HEAD"))
-    private void readCustomDataFromNbtMixin(CompoundTag nbt, CallbackInfo info) {
-        this.tieredChecked = nbt.getBoolean("TieredChecked");
+    private void readCustomDataFromNbtMixin(ValueInput nbt, CallbackInfo info) {
+        this.tieredChecked = nbt.getBooleanOr("TieredChecked", false);
     }
 
     @Inject(method = "addAdditionalSaveData", at = @At("TAIL"))
-    private void writeCustomDataToNbtMixin(CompoundTag nbt, CallbackInfo info) {
+    private void writeCustomDataToNbtMixin(ValueOutput nbt, CallbackInfo info) {
         nbt.putBoolean("TieredChecked", true);
     }
 

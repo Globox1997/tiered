@@ -2,7 +2,7 @@ package draylar.tiered.gson;
 
 import com.google.gson.*;
 import java.lang.reflect.Type;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 
 public class EntityAttributeModifierDeserializer implements JsonDeserializer<AttributeModifier> {
@@ -19,7 +19,7 @@ public class EntityAttributeModifierDeserializer implements JsonDeserializer<Att
         JsonElement amount = getJsonElement(jsonObject, JSON_AMOUNT_KEY, "Entity Attribute Modifier requires an amount!");
         JsonElement operation = getJsonElement(jsonObject, JSON_OPERATION_KEY, "Entity Attribute Modifier requires an operation!");
 
-        return new AttributeModifier(ResourceLocation.parse(name.getAsString()), amount.getAsFloat(), AttributeModifier.Operation.valueOf(operation.getAsString().toUpperCase()));
+        return new AttributeModifier(Identifier.parse(name.getAsString()), amount.getAsFloat(), AttributeModifier.Operation.valueOf(operation.getAsString().toUpperCase()));
     }
 
     private JsonElement getJsonElement(JsonObject jsonObject, String jsonNameKey, String s) {

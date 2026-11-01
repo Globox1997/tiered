@@ -1,7 +1,7 @@
 {
   "required": true,
   "package": "draylar.tiered.mixin",
-  "compatibilityLevel": "JAVA_21",
+  "compatibilityLevel": "JAVA_25",
   "plugin": "draylar.tiered.mixin.compat.TieredMixinPlugin",
   "mixins": [
     "ItemStackMixin",
@@ -18,14 +18,17 @@
     "ArmorStandEntityMixin",
     "CraftingScreenHandlerMixin",
     "access.StyleAccessor",
-    "access.ServerPlayerEntityAccessor"
+    "access.ServerPlayerEntityAccessor",
+    "access.AbstractArrowAccessor"
   ],
   "client": [
     "client.ItemStackClientMixin",
+    "client.ItemAttributeModifiersDisplayMixin",
     "client.AnvilScreenMixin",
     "client.DrawContextMixin",
     "client.HandledScreenMixin",
-    "compat.ModAnvilScreenMixin"
+    "compat.ModAnvilScreenMixin",
+    "access.GuiGraphicsExtractorAccessor"
   ],
   "injectors": {
     "defaultRequire": 1

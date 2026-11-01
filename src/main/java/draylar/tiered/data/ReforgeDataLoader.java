@@ -15,7 +15,7 @@ import com.google.gson.JsonParser;
 
 import net.fabricmc.fabric.api.resource.SimpleSynchronousResourceReloadListener;
 import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.world.item.Item;
 
@@ -23,37 +23,37 @@ public class ReforgeDataLoader implements SimpleSynchronousResourceReloadListene
 
     private static final Logger LOGGER = LogManager.getLogger("TieredZ");
 
-    private List<ResourceLocation> reforgeIdentifiers = new ArrayList<>();
-    private Map<ResourceLocation, List<Item>> reforgeBaseMap = new HashMap<>();
+    private List<Identifier> reforgeIdentifiers = new ArrayList<>();
+    private Map<Identifier, List<Item>> reforgeBaseMap = new HashMap<>();
 
     @Override
-    public ResourceLocation getFabricId() {
-        return ResourceLocation.fromNamespaceAndPath("tiered", "reforge_loader");
+    public Identifier getFabricId() {
+        return Identifier.fromNamespaceAndPath("tiered", "reforge_loader");
     }
 
     @Override
     public void onResourceManagerReload(ResourceManager resourceManager) {
-        List<ResourceLocation> reforgeIdentifiers = new ArrayList<>();
-        Map<ResourceLocation, List<Item>> reforgeBaseMap = new HashMap<>();
+        List<Identifier> reforgeIdentifiers = new ArrayList<>();
+        Map<Identifier, List<Item>> reforgeBaseMap = new HashMap<>();
 
         resourceManager.listResources("reforge_items", id -> id.getPath().endsWith(".json")).forEach((id, resourceRef) -> {
             try (InputStream stream = resourceRef.open(); InputStreamReader reader = new InputStreamReader(stream)) {
                 JsonObject data = JsonParser.parseReader(reader).getAsJsonObject();
 
                 for (int u = 0; u < data.getAsJsonArray("items").size(); u++) {
-                    ResourceLocation itemId = ResourceLocation.tryParse(data.getAsJsonArray("items").get(u).getAsString());
+                    Identifier itemId = Identifier.tryParse(data.getAsJsonArray("items").get(u).getAsString());
                     if (itemId == null || !BuiltInRegistries.ITEM.containsKey(itemId)) {
                         LOGGER.info("Resource {} was not loaded cause {} is not a valid item identifier", id.toString(), data.getAsJsonArray("items").get(u).getAsString());
                         continue;
                     }
                     List<Item> baseItems = new ArrayList<Item>();
                     for (int i = 0; i < data.getAsJsonArray("base").size(); i++) {
-                        ResourceLocation baseId = ResourceLocation.tryParse(data.getAsJsonArray("base").get(i).getAsString());
+                        Identifier baseId = Identifier.tryParse(data.getAsJsonArray("base").get(i).getAsString());
                         if (baseId == null || !BuiltInRegistries.ITEM.containsKey(baseId)) {
                             LOGGER.info("Resource {} was not loaded cause {} is not a valid item identifier", id.toString(), data.getAsJsonArray("base").get(i).getAsString());
                             continue;
                         }
-                        baseItems.add(BuiltInRegistries.ITEM.get(baseId));
+                        baseItems.add(BuiltInRegistries.ITEM.getValue(baseId));
                     }
 
                     if (!reforgeIdentifiers.contains(itemId)) {
@@ -78,7 +78,7 @@ public class ReforgeDataLoader implements SimpleSynchronousResourceReloadListene
         return list;
     }
 
-    public void putReforgeBaseItems(ResourceLocation id, List<Item> items) {
+    public void putReforgeBaseItems(Identifier id, List<Item> items) {
         reforgeBaseMap.put(id, items);
     }
 
@@ -86,7 +86,7 @@ public class ReforgeDataLoader implements SimpleSynchronousResourceReloadListene
         reforgeBaseMap.clear();
     }
 
-    public List<ResourceLocation> getReforgeIdentifiers() {
+    public List<Identifier> getReforgeIdentifiers() {
         return reforgeIdentifiers;
     }
 

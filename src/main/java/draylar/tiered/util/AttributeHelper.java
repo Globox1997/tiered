@@ -3,7 +3,7 @@ package draylar.tiered.util;
 import draylar.tiered.api.CustomEntityAttributes;
 import java.util.LinkedHashMap;
 import java.util.Map;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.ai.attributes.AttributeInstance;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
@@ -49,7 +49,7 @@ public class AttributeHelper {
     }
 
     public static float getExtraRangeDamage(Player playerEntity, ItemStack weaponStack, float oldDamage) {
-        Map<ResourceLocation, AttributeModifier> modifiers = new LinkedHashMap<>();
+        Map<Identifier, AttributeModifier> modifiers = new LinkedHashMap<>();
         AttributeInstance instance = playerEntity.getAttribute(CustomEntityAttributes.RANGE_ATTACK_DAMAGE);
         if (instance != null) {
             for (AttributeModifier modifier : instance.getModifiers()) {

@@ -3,7 +3,7 @@ package draylar.tiered.api;
 import net.minecraft.core.Holder;
 import net.minecraft.core.Registry;
 import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.ai.attributes.Attribute;
 import net.minecraft.world.entity.ai.attributes.RangedAttribute;
 
@@ -21,6 +21,6 @@ public class CustomEntityAttributes {
     }
 
     private static Holder<Attribute> register(String id, Attribute attribute) {
-        return Registry.registerForHolder(BuiltInRegistries.ATTRIBUTE, ResourceLocation.parse(id), attribute);
+        return Registry.registerForHolder(BuiltInRegistries.ATTRIBUTE, Identifier.parse(id), attribute);
     }
 }

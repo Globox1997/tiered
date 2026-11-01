@@ -11,7 +11,6 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.ModifyVariable;
-import org.spongepowered.asm.mixin.injection.Slice;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 @Mixin(Player.class)
@@ -34,7 +33,7 @@ public abstract class PlayerEntityMixin extends LivingEntity {
         return AttributeHelper.getExtraDigSpeed((Player) (Object) this, f);
     }
 
-    @ModifyVariable(method = "attack", at = @At(value = "JUMP", ordinal = 2), slice = @Slice(from = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/player/Player;isSprinting()Z", ordinal = 1)), index = 8)
+    @ModifyVariable(method = "attack", at = @At("STORE"), ordinal = 2)
     private boolean attackMixin(boolean bl3) {
         return bl3 || AttributeHelper.shouldMeeleCrit((Player) (Object) this);
     }

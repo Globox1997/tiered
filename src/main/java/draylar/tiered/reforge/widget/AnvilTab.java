@@ -8,12 +8,12 @@ import net.fabricmc.api.Environment;
 import net.libz.api.InventoryTab;
 import net.minecraft.client.Minecraft;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 
 @Environment(EnvType.CLIENT)
 public class AnvilTab extends InventoryTab {
 
-    public AnvilTab(Component title, @Nullable ResourceLocation texture, int preferedPos, Class<?>... screenClasses) {
+    public AnvilTab(Component title, @Nullable Identifier texture, int preferedPos, Class<?>... screenClasses) {
         super(title, texture, preferedPos, screenClasses);
     }
 

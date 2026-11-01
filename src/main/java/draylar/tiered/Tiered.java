@@ -14,14 +14,15 @@ import net.fabricmc.fabric.api.resource.ResourceManagerHelper;
 import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.core.Registry;
 import net.minecraft.core.component.DataComponentType;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.packs.PackType;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.flag.FeatureFlags;
 import net.minecraft.world.inventory.ContainerLevelAccess;
 import net.minecraft.world.inventory.MenuType;
-import net.minecraft.world.item.Equipable;
+import net.minecraft.world.item.equipment.Equippable;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.ProjectileWeaponItem;
 import net.minecraft.world.item.ShieldItem;
@@ -94,21 +95,22 @@ public class Tiered implements ModInitializer {
     }
 
     /**
-     * Returns an {@link ResourceLocation} namespaced with this mod's modid ("tiered").
+     * Returns an {@link Identifier} namespaced with this mod's modid ("tiered").
      *
      * @param path path of identifier (eg. apple in "minecraft:apple")
      * @return Identifier created with a namespace of this mod's modid ("tiered") and provided path
      */
-    public static ResourceLocation id(String path) {
-        return ResourceLocation.fromNamespaceAndPath("tiered", path);
+    public static Identifier id(String path) {
+        return Identifier.fromNamespaceAndPath("tiered", path);
     }
 
     public static boolean isPreferredEquipmentSlot(ItemStack stack, EquipmentSlot slot) {
         if (stack.getItem() instanceof ShieldItem || stack.getItem() instanceof ProjectileWeaponItem || stack.is(TieredItemTags.MAIN_OFFHAND_ITEM)) {
             return slot == EquipmentSlot.MAINHAND || slot == EquipmentSlot.OFFHAND;
         }
-        if (stack.getItem() instanceof Equipable equipment) {
-            return equipment.getEquipmentSlot().equals(slot);
+        Equippable equippable = stack.get(DataComponents.EQUIPPABLE);
+        if (equippable != null) {
+            return equippable.slot().equals(slot);
         }
         return slot == EquipmentSlot.MAINHAND;
     }

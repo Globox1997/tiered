@@ -2,14 +2,14 @@ package draylar.tiered.api;
 
 import java.util.ArrayList;
 import java.util.List;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.item.ItemStack;
 
 public class BorderTemplate {
 
     private final int index;
     private final String texture;
-    private final ResourceLocation identifier;
+    private final Identifier identifier;
     private final int startGradient;
     private final int endGradient;
     private final int backgroundGradient;
@@ -19,7 +19,7 @@ public class BorderTemplate {
     public BorderTemplate(int index, String texture, int startGradient, int endGradient, int backgroundGradient, List<String> decider) {
         this.index = index;
         this.texture = texture;
-        this.identifier = ResourceLocation.fromNamespaceAndPath("tiered", "textures/gui/" + this.texture + ".png");
+        this.identifier = Identifier.fromNamespaceAndPath("tiered", "textures/gui/" + this.texture + ".png");
         this.startGradient = startGradient;
         this.endGradient = endGradient;
         this.backgroundGradient = backgroundGradient;
@@ -35,7 +35,7 @@ public class BorderTemplate {
         return this.texture;
     }
 
-    public ResourceLocation getIdentifier() {
+    public Identifier getIdentifier() {
         return this.identifier;
     }
 

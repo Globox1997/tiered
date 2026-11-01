@@ -13,7 +13,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 @Mixin(CraftingMenu.class)
 public class CraftingScreenHandlerMixin {
 
-    @Inject(method = "quickMoveStack", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/inventory/ContainerLevelAccess;execute(Ljava/util/function/BiConsumer;)V"), cancellable = true)
+    @Inject(method = "quickMoveStack", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/item/Item;onCraftedBy(Lnet/minecraft/world/item/ItemStack;Lnet/minecraft/world/entity/player/Player;)V"), cancellable = true)
     public void quickMoveMixin(Player player, int slot, CallbackInfoReturnable<ItemStack> info) {
         AbstractContainerMenu screenHandler = (AbstractContainerMenu) (Object) this;
         ItemStack result = screenHandler.getSlot(slot).getItem();

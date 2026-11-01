@@ -18,7 +18,7 @@ import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.item.Item;
 
 @Environment(EnvType.CLIENT)
@@ -30,7 +30,7 @@ public class TieredClientPacket {
             boolean disableButton = payload.disableButton();
             boolean uniqueReforge = payload.uniqueReforge();
             context.client().execute(() -> {
-                if (context.client().screen instanceof ReforgeScreen reforgeScreen) {
+                if (context.client().gui.screen() instanceof ReforgeScreen reforgeScreen) {
                     reforgeScreen.reforgeButton.setDisabled(disableButton);
                     reforgeScreen.setUniqueReforge(uniqueReforge);
                 }
@@ -43,7 +43,7 @@ public class TieredClientPacket {
             });
         });
         ClientPlayNetworking.registerGlobalReceiver(ReforgeItemSyncPacket.PACKET_ID, (payload, context) -> {
-            List<ResourceLocation> identifiers = payload.ids();
+            List<Identifier> identifiers = payload.ids();
             List<Integer> listSize = payload.listSize();
             List<Integer> itemIds = payload.itemIds();
 
@@ -76,7 +76,7 @@ public class TieredClientPacket {
                 }
 
                 for (int i = 0; i < payload.attributeIds().size(); i++) {
-                    ResourceLocation id = ResourceLocation.parse(payload.attributeIds().get(i));
+                    Identifier id = Identifier.parse(payload.attributeIds().get(i));
                     PotentialAttribute pa = AttributeDataLoader.GSON.fromJson(payload.attributeJsons().get(i), PotentialAttribute.class);
                     Tiered.ATTRIBUTE_DATA_LOADER.getItemAttributes().put(id, pa);
                 }

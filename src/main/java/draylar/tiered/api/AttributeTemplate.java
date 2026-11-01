@@ -6,7 +6,7 @@ import java.util.Optional;
 import java.util.function.BiConsumer;
 import net.minecraft.core.Holder;
 import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.EquipmentSlotGroup;
 import net.minecraft.world.entity.ai.attributes.Attribute;
@@ -68,10 +68,10 @@ public class AttributeTemplate {
      * @param slot
      */
     public void applyModifiers(EquipmentSlot slot, BiConsumer<Holder<Attribute>, AttributeModifier> attributeConsumer) {
-        Optional<Holder.Reference<Attribute>> optional = BuiltInRegistries.ATTRIBUTE.getHolder(ResourceLocation.parse(this.attributeTypeID));
+        Optional<Holder.Reference<Attribute>> optional = BuiltInRegistries.ATTRIBUTE.get(Identifier.parse(this.attributeTypeID));
 
         if (optional.isPresent()) {
-            AttributeModifier cloneModifier = new AttributeModifier(ResourceLocation.parse(entityAttributeModifier.id().toString() + "_" + slot.getName()), entityAttributeModifier.amount(), entityAttributeModifier.operation());
+            AttributeModifier cloneModifier = new AttributeModifier(Identifier.parse(entityAttributeModifier.id().toString() + "_" + slot.getName()), entityAttributeModifier.amount(), entityAttributeModifier.operation());
 
             ItemAttributeModifiers.Entry entry = new ItemAttributeModifiers.Entry(optional.get(), cloneModifier, EquipmentSlotGroup.bySlot(slot));
             if (entry.slot().test(slot)) {

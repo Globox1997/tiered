@@ -16,7 +16,7 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 
 import net.fabricmc.fabric.api.resource.SimpleSynchronousResourceReloadListener;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.packs.resources.ResourceManager;
 
 public class TooltipBorderLoader implements SimpleSynchronousResourceReloadListener {
@@ -24,8 +24,8 @@ public class TooltipBorderLoader implements SimpleSynchronousResourceReloadListe
     private static final Logger LOGGER = LogManager.getLogger("TieredZ");
 
     @Override
-    public ResourceLocation getFabricId() {
-        return ResourceLocation.fromNamespaceAndPath("tiered", "tooltip_loader");
+    public Identifier getFabricId() {
+        return Identifier.fromNamespaceAndPath("tiered", "tooltip_loader");
     }
 
     @Override

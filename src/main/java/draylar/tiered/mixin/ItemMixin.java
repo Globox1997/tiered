@@ -14,14 +14,13 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.MerchantMenu;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.level.Level;
 
 @Mixin(Item.class)
 public class ItemMixin {
 
     @Inject(method = "onCraftedBy", at = @At("HEAD"))
-    private void onCraftByPlayerMixin(ItemStack stack, Level world, Player player, CallbackInfo info) {
-        if (!world.isClientSide() && !stack.isEmpty()) {
+    private void onCraftByPlayerMixin(ItemStack stack, Player player, CallbackInfo info) {
+        if (!player.level().isClientSide() && !stack.isEmpty()) {
             boolean enabled = player.containerMenu instanceof MerchantMenu ? ConfigInit.CONFIG.merchantModifier : ConfigInit.CONFIG.craftingModifier;
             if (enabled) {
                 ModifierUtils.setItemStackAttribute(player, stack, false);
