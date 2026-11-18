@@ -1,0 +1,50 @@
+{
+    "id": "tiered:rare_shield_4",
+    "verifiers": [
+        {
+            "tag": "c:tools/shield"
+        }
+    ],
+    "weight": 15,
+    "style": {
+        "color": "blue"
+    },
+    "attributes": [
+        {
+            "type": "minecraft:armor",
+            "modifier": {
+                "name": "tiered:rare_shield_4",
+                "operation": "ADD_VALUE",
+                "amount": 1
+            },
+            "optional_equipment_slots": [
+                "MAINHAND",
+                "OFFHAND"
+            ]
+        },
+        {
+            "type": "minecraft:max_health",
+            "modifier": {
+                "name": "tiered:rare_shield_4",
+                "operation": "ADD_VALUE",
+                "amount": 1
+            },
+            "optional_equipment_slots": [
+                "MAINHAND",
+                "OFFHAND"
+            ]
+        },
+        {
+            "type": "minecraft:movement_speed",
+            "modifier": {
+                "name": "tiered:rare_shield_4",
+                "operation": "ADD_MULTIPLIED_TOTAL",
+                "amount": -0.05
+            },
+            "optional_equipment_slots": [
+                "MAINHAND",
+                "OFFHAND"
+            ]
+        }
+    ]
+}

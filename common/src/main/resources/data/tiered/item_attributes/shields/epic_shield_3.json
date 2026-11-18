@@ -1,0 +1,38 @@
+{
+    "id": "tiered:epic_shield_3",
+    "verifiers": [
+        {
+            "tag": "c:tools/shield"
+        }
+    ],
+    "weight": 8,
+    "style": {
+        "color": "dark_purple"
+    },
+    "attributes": [
+        {
+            "type": "minecraft:armor",
+            "modifier": {
+                "name": "tiered:epic_shield_3",
+                "operation": "ADD_VALUE",
+                "amount": 1
+            },
+            "optional_equipment_slots": [
+                "MAINHAND",
+                "OFFHAND"
+            ]
+        },
+        {
+            "type": "tiered:generic.durable",
+            "modifier": {
+                "name": "tiered:epic_shield_3",
+                "operation": "ADD_MULTIPLIED_TOTAL",
+                "amount": 0.15
+            },
+            "optional_equipment_slots": [
+                "MAINHAND",
+                "OFFHAND"
+            ]
+        }
+    ]
+}

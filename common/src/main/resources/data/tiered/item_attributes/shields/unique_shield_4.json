@@ -1,0 +1,50 @@
+{
+    "id": "tiered:unique_shield_4",
+    "verifiers": [
+        {
+            "tag": "c:tools/shield"
+        }
+    ],
+    "weight": 0,
+    "style": {
+        "color": "light_purple"
+    },
+    "attributes": [
+        {
+            "type": "minecraft:armor",
+            "modifier": {
+                "name": "tiered:unique_shield_4",
+                "operation": "ADD_VALUE",
+                "amount": 4
+            },
+            "optional_equipment_slots": [
+                "MAINHAND",
+                "OFFHAND"
+            ]
+        },
+        {
+            "type": "minecraft:max_health",
+            "modifier": {
+                "name": "tiered:unique_shield_4",
+                "operation": "ADD_VALUE",
+                "amount": 6
+            },
+            "optional_equipment_slots": [
+                "MAINHAND",
+                "OFFHAND"
+            ]
+        },
+        {
+            "type": "minecraft:movement_speed",
+            "modifier": {
+                "name": "tiered:unique_shield_4",
+                "operation": "ADD_MULTIPLIED_TOTAL",
+                "amount": 0.1
+            },
+            "optional_equipment_slots": [
+                "MAINHAND",
+                "OFFHAND"
+            ]
+        }
+    ]
+}

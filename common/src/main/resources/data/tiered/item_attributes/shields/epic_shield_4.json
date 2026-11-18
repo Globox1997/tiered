@@ -1,0 +1,38 @@
+{
+    "id": "tiered:epic_shield_4",
+    "verifiers": [
+        {
+            "tag": "c:tools/shield"
+        }
+    ],
+    "weight": 8,
+    "style": {
+        "color": "dark_purple"
+    },
+    "attributes": [
+        {
+            "type": "minecraft:armor",
+            "modifier": {
+                "name": "tiered:epic_shield_4",
+                "operation": "ADD_VALUE",
+                "amount": 2
+            },
+            "optional_equipment_slots": [
+                "MAINHAND",
+                "OFFHAND"
+            ]
+        },
+        {
+            "type": "minecraft:max_health",
+            "modifier": {
+                "name": "tiered:epic_shield_4",
+                "operation": "ADD_VALUE",
+                "amount": 3
+            },
+            "optional_equipment_slots": [
+                "MAINHAND",
+                "OFFHAND"
+            ]
+        }
+    ]
+}

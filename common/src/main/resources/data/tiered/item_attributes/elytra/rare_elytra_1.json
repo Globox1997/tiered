@@ -1,0 +1,36 @@
+{
+    "id": "tiered:rare_elytra_1",
+    "verifiers": [
+        {
+            "id": "minecraft:elytra"
+        }
+    ],
+    "weight": 15,
+    "style": {
+        "color": "blue"
+    },
+    "attributes": [
+        {
+            "type": "minecraft:max_health",
+            "modifier": {
+                "name": "tiered:rare_elytra_1",
+                "operation": "ADD_VALUE",
+                "amount": -1
+            },
+            "optional_equipment_slots": [
+                "CHEST"
+            ]
+        },
+        {
+            "type": "tiered:generic.durable",
+            "modifier": {
+                "name": "tiered:rare_elytra_1",
+                "operation": "ADD_MULTIPLIED_TOTAL",
+                "amount": -0.2
+            },
+            "optional_equipment_slots": [
+                "CHEST"
+            ]
+        }
+    ]
+}

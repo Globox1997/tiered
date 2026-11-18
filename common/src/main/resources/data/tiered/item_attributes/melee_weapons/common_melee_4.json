@@ -1,0 +1,47 @@
+{
+    "id": "tiered:common_melee_4",
+    "verifiers": [
+        {
+            "tag": "minecraft:swords"
+        }
+    ],
+    "weight": 50,
+    "style": {
+        "color": "gray"
+    },
+    "attributes": [
+        {
+            "type": "minecraft:attack_damage",
+            "modifier": {
+                "name": "tiered:common_melee_4",
+                "operation": "ADD_MULTIPLIED_TOTAL",
+                "amount": -0.3
+            },
+            "optional_equipment_slots": [
+                "MAINHAND"
+            ]
+        },
+        {
+            "type": "tiered:generic.durable",
+            "modifier": {
+                "name": "tiered:common_melee_4",
+                "operation": "ADD_MULTIPLIED_TOTAL",
+                "amount": -0.3
+            },
+            "optional_equipment_slots": [
+                "MAINHAND"
+            ]
+        },
+        {
+            "type": "minecraft:luck",
+            "modifier": {
+                "name": "tiered:common_melee_4",
+                "operation": "ADD_VALUE",
+                "amount": -2
+            },
+            "optional_equipment_slots": [
+                "MAINHAND"
+            ]
+        }
+    ]
+}

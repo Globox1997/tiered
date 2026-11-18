@@ -1,0 +1,56 @@
+{
+    "id": "tiered:common_tool_2",
+    "verifiers": [
+        {
+            "tag": "minecraft:axes"
+        },
+        {
+            "tag": "minecraft:pickaxes"
+        },
+        {
+            "tag": "minecraft:shovels"
+        },
+        {
+            "tag": "minecraft:hoes"
+        }
+    ],
+    "weight": 50,
+    "style": {
+        "color": "gray"
+    },
+    "attributes": [
+        {
+            "type": "tiered:generic.durable",
+            "modifier": {
+                "name": "tiered:common_tool_2",
+                "operation": "ADD_MULTIPLIED_TOTAL",
+                "amount": -0.3
+            },
+            "optional_equipment_slots": [
+                "MAINHAND"
+            ]
+        },
+        {
+            "type": "tiered:generic.dig_speed",
+            "modifier": {
+                "name": "tiered:common_tool_2",
+                "operation": "ADD_MULTIPLIED_TOTAL",
+                "amount": -0.2
+            },
+            "optional_equipment_slots": [
+                "MAINHAND"
+            ]
+        },
+        {
+            "type": "minecraft:block_interaction_range",
+            "modifier": {
+                "name": "tiered:common_tool_2",
+                "operation": "ADD_VALUE",
+                "amount": -2
+            },
+            "optional_equipment_slots": [
+                "MAINHAND"
+            ]
+        }
+    ]
+}
